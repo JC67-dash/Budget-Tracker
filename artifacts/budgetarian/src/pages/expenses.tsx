@@ -336,7 +336,7 @@ export default function Expenses() {
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
-                    <span className="font-semibold text-foreground">${expense.amount.toFixed(2)}</span>
+                    <span className="font-semibold text-foreground">₱{expense.amount.toFixed(2)}</span>
                     <Button 
                       variant="ghost" 
                       size="icon"
