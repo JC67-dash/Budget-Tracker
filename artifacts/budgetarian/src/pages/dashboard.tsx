@@ -1,0 +1,298 @@
+import { Link } from "wouter";
+import {
+  useGetDashboardSummary,
+  getGetDashboardSummaryQueryKey,
+  useGetUpcomingInstallments,
+  getGetUpcomingInstallmentsQueryKey,
+  useGetExpiringSoonWarranties,
+  getGetExpiringSoonWarrantiesQueryKey,
+  useGetExpenseSummary,
+  getGetExpenseSummaryQueryKey,
+} from "@workspace/api-client-react";
+import {
+  TrendingDown,
+  Target,
+  CalendarClock,
+  ShieldCheck,
+  AlertTriangle,
+  ArrowRight,
+  DollarSign,
+  PiggyBank,
+} from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Cell,
+} from "recharts";
+import { format, addDays, parseISO, differenceInDays } from "date-fns";
+
+const CHART_COLORS = ["#0d9488", "#14b8a6", "#2dd4bf", "#5eead4", "#99f6e4"];
+
+export default function Dashboard() {
+  const { data: summary, isLoading: summaryLoading } = useGetDashboardSummary({
+    query: { queryKey: getGetDashboardSummaryQueryKey() },
+  });
+
+  const { data: upcomingData } = useGetUpcomingInstallments({
+    query: { queryKey: getGetUpcomingInstallmentsQueryKey() },
+  });
+
+  const { data: expiringSoonData } = useGetExpiringSoonWarranties({
+    query: { queryKey: getGetExpiringSoonWarrantiesQueryKey() },
+  });
+
+  const { data: expenseSummary } = useGetExpenseSummary({
+    query: { queryKey: getGetExpenseSummaryQueryKey() },
+  });
+
+  const upcoming = upcomingData?.installments ?? [];
+  const expiringSoon = expiringSoonData?.warranties ?? [];
+  const categoryData = summary?.categoryBreakdown ?? [];
+
+  if (summaryLoading) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <Skeleton className="h-9 w-40 mb-2" />
+          <Skeleton className="h-5 w-56" />
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <Skeleton key={i} className="h-28 rounded-2xl" />
+          ))}
+        </div>
+        <Skeleton className="h-64 rounded-2xl" />
+      </div>
+    );
+  }
+
+  const stats = [
+    {
+      label: "Spent This Month",
+      value: `₱${(summary?.totalExpensesThisMonth ?? 0).toLocaleString("en-PH", { minimumFractionDigits: 2 })}`,
+      icon: TrendingDown,
+      color: "text-rose-500",
+      bg: "bg-rose-50 dark:bg-rose-950/30",
+      testId: "stat-spent-month",
+    },
+    {
+      label: "Total Saved",
+      value: `₱${(summary?.totalSaved ?? 0).toLocaleString("en-PH", { minimumFractionDigits: 2 })}`,
+      icon: PiggyBank,
+      color: "text-teal-600",
+      bg: "bg-teal-50 dark:bg-teal-950/30",
+      testId: "stat-total-saved",
+    },
+    {
+      label: "Active Goals",
+      value: summary?.activeGoals ?? 0,
+      icon: Target,
+      color: "text-indigo-500",
+      bg: "bg-indigo-50 dark:bg-indigo-950/30",
+      testId: "stat-active-goals",
+    },
+    {
+      label: "Upcoming Dues",
+      value: summary?.upcomingDues ?? 0,
+      icon: CalendarClock,
+      color: summary?.upcomingDues ? "text-amber-500" : "text-muted-foreground",
+      bg: summary?.upcomingDues ? "bg-amber-50 dark:bg-amber-950/30" : "bg-muted",
+      testId: "stat-upcoming-dues",
+    },
+  ];
+
+  return (
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-3xl font-bold text-foreground tracking-tight" data-testid="text-dashboard-heading">
+          Dashboard
+        </h1>
+        <p className="text-muted-foreground mt-1">
+          {format(new Date(), "EEEE, MMMM d, yyyy")} — here&apos;s your financial snapshot.
+        </p>
+      </div>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {stats.map((stat) => {
+          const Icon = stat.icon;
+          return (
+            <Card key={stat.label} className="border-none shadow-sm hover-elevate transition-all" data-testid={stat.testId}>
+              <CardContent className="p-5">
+                <div className={`h-10 w-10 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center mb-3`}>
+                  <Icon className="h-5 w-5" />
+                </div>
+                <p className="text-2xl font-bold text-foreground">{stat.value}</p>
+                <p className="text-sm text-muted-foreground mt-0.5">{stat.label}</p>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Spending by Category Chart */}
+        <Card className="border-none shadow-sm lg:col-span-2">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base font-semibold">Spending This Month</CardTitle>
+            <CardDescription>Breakdown by category</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {categoryData.length === 0 ? (
+              <div className="flex items-center justify-center h-40 text-muted-foreground text-sm">
+                No spending data yet. Add your first expense.
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={categoryData} margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis
+                    dataKey="category"
+                    tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <Tooltip
+                    formatter={(v: any) => [`₱${Number(v).toFixed(2)}`, "Amount"]}
+                    contentStyle={{
+                      background: "hsl(var(--card))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: "8px",
+                      fontSize: 12,
+                    }}
+                  />
+                  <Bar dataKey="total" radius={[6, 6, 0, 0]}>
+                    {categoryData.map((_, index) => (
+                      <Cell key={index} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Alerts Column */}
+        <div className="space-y-4">
+          {/* Upcoming Dues */}
+          <Card className="border-none shadow-sm">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base font-semibold flex items-center gap-2">
+                  <CalendarClock className="h-4 w-4 text-amber-500" />
+                  Upcoming Dues
+                </CardTitle>
+                <Link href="/installments">
+                  <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" data-testid="link-view-installments">
+                    View all <ArrowRight className="h-3 w-3" />
+                  </Button>
+                </Link>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {upcoming.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No dues within 7 days.</p>
+              ) : (
+                upcoming.slice(0, 3).map((inst) => {
+                  const daysLeft = differenceInDays(parseISO(inst.dueDate), new Date());
+                  return (
+                    <div key={inst.id} className="flex items-start justify-between p-2.5 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30" data-testid={`alert-installment-${inst.id}`}>
+                      <div>
+                        <p className="text-sm font-medium text-foreground">{inst.name}</p>
+                        <p className="text-xs text-muted-foreground">{format(parseISO(inst.dueDate), "MMM d")}</p>
+                      </div>
+                      <Badge variant="outline" className="text-xs border-amber-300 text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 shrink-0 ml-2">
+                        {daysLeft === 0 ? "Today" : `${daysLeft}d`}
+                      </Badge>
+                    </div>
+                  );
+                })
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Expiring Warranties */}
+          <Card className="border-none shadow-sm">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base font-semibold flex items-center gap-2">
+                  <ShieldCheck className="h-4 w-4 text-rose-500" />
+                  Expiring Soon
+                </CardTitle>
+                <Link href="/warranties">
+                  <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" data-testid="link-view-warranties">
+                    View all <ArrowRight className="h-3 w-3" />
+                  </Button>
+                </Link>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {expiringSoon.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No warranties expiring in 30 days.</p>
+              ) : (
+                expiringSoon.slice(0, 3).map((w) => (
+                  <div key={w.id} className="flex items-start justify-between p-2.5 rounded-lg bg-rose-50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/30" data-testid={`alert-warranty-${w.id}`}>
+                    <div>
+                      <p className="text-sm font-medium text-foreground">{w.productName}</p>
+                      <p className="text-xs text-muted-foreground">Expires {format(parseISO(w.expiryDate), "MMM d")}</p>
+                    </div>
+                    <AlertTriangle className="h-4 w-4 text-rose-500 shrink-0 mt-0.5" />
+                  </div>
+                ))
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* Recent Expenses */}
+      <Card className="border-none shadow-sm">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base font-semibold">Recent Expenses</CardTitle>
+            <Link href="/expenses">
+              <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" data-testid="link-view-expenses">
+                View all <ArrowRight className="h-3 w-3" />
+              </Button>
+            </Link>
+          </div>
+        </CardHeader>
+        <CardContent className="p-0">
+          {(summary?.recentExpenses ?? []).length === 0 ? (
+            <p className="px-6 pb-6 text-sm text-muted-foreground">No expenses yet.</p>
+          ) : (
+            <div className="divide-y divide-border">
+              {(summary?.recentExpenses ?? []).map((expense) => (
+                <div key={expense.id} className="px-6 py-3 flex items-center justify-between" data-testid={`row-recent-expense-${expense.id}`}>
+                  <div>
+                    <p className="text-sm font-medium text-foreground">{expense.description}</p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-xs text-muted-foreground">{format(parseISO(expense.date), "MMM d")}</span>
+                      <span className="text-xs bg-secondary text-secondary-foreground px-2 py-0.5 rounded-full">{expense.category}</span>
+                    </div>
+                  </div>
+                  <span className="font-semibold text-sm text-foreground">₱{Number(expense.amount).toFixed(2)}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

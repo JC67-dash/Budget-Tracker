@@ -1,0 +1,91 @@
+import { Router, type IRouter } from "express";
+import { eq, and, sql } from "drizzle-orm";
+import { db, expensesTable, goalsTable, installmentsTable, warrantiesTable } from "@workspace/db";
+import { getAuth } from "@clerk/express";
+
+const router: IRouter = Router();
+
+function requireAuth(req: any, res: any, next: any) {
+  const auth = getAuth(req);
+  const userId = auth?.userId;
+  if (!userId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+  req.userId = userId;
+  next();
+}
+
+router.get("/dashboard/summary", requireAuth, async (req: any, res): Promise<void> => {
+  const now = new Date();
+  const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
+  const sevenDaysLater = new Date();
+  sevenDaysLater.setDate(sevenDaysLater.getDate() + 7);
+  const upcoming7 = sevenDaysLater.toISOString().slice(0, 10);
+  const today = now.toISOString().slice(0, 10);
+  const thirtyDaysLater = new Date();
+  thirtyDaysLater.setDate(thirtyDaysLater.getDate() + 30);
+  const upcoming30 = thirtyDaysLater.toISOString().slice(0, 10);
+
+  const [totalExpenseResult, goalsResult, upcomingDuesResult, expiringSoonResult, recentExpenses, categoryBreakdown] =
+    await Promise.all([
+      db
+        .select({ total: sql<number>`coalesce(sum(amount::numeric), 0)` })
+        .from(expensesTable)
+        .where(and(eq(expensesTable.userId, req.userId), sql`date >= ${thisMonthStart}`)),
+      db
+        .select()
+        .from(goalsTable)
+        .where(eq(goalsTable.userId, req.userId)),
+      db
+        .select({ count: sql<number>`count(*)` })
+        .from(installmentsTable)
+        .where(
+          and(
+            eq(installmentsTable.userId, req.userId),
+            eq(installmentsTable.status, "pending"),
+            sql`due_date >= ${today}`,
+            sql`due_date <= ${upcoming7}`
+          )
+        ),
+      db
+        .select({ count: sql<number>`count(*)` })
+        .from(warrantiesTable)
+        .where(
+          and(
+            eq(warrantiesTable.userId, req.userId),
+            sql`expiry_date >= ${today}`,
+            sql`expiry_date <= ${upcoming30}`
+          )
+        ),
+      db
+        .select()
+        .from(expensesTable)
+        .where(eq(expensesTable.userId, req.userId))
+        .orderBy(expensesTable.createdAt)
+        .limit(5),
+      db
+        .select({
+          category: expensesTable.category,
+          total: sql<number>`coalesce(sum(amount::numeric), 0)`,
+        })
+        .from(expensesTable)
+        .where(and(eq(expensesTable.userId, req.userId), sql`date >= ${thisMonthStart}`))
+        .groupBy(expensesTable.category),
+    ]);
+
+  const totalSaved = goalsResult.reduce((sum, g) => sum + Number(g.savedAmount), 0);
+  const activeGoals = goalsResult.length;
+
+  res.json({
+    totalExpensesThisMonth: Number(totalExpenseResult[0]?.total ?? 0),
+    totalSaved,
+    activeGoals,
+    upcomingDues: Number(upcomingDuesResult[0]?.count ?? 0),
+    expiringSoonCount: Number(expiringSoonResult[0]?.count ?? 0),
+    recentExpenses: recentExpenses.map((e) => ({ ...e, amount: Number(e.amount) })),
+    categoryBreakdown: categoryBreakdown.map((c) => ({ category: c.category, total: Number(c.total) })),
+  });
+});
+
+export default router;

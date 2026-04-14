@@ -3,13 +3,28 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Budgetarian API specification
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: expenses
+    description: Expense tracking
+  - name: goals
+    description: Savings goals
+  - name: installments
+    description: Paylater & installment tracking
+  - name: warranties
+    description: Warranty keeper
+  - name: tips
+    description: Money-saving tips and income ideas
+  - name: dashboard
+    description: Dashboard summary data
+  - name: Storage
+    description: Object storage upload and serving endpoints.
+
 paths:
   /healthz:
     get:
@@ -24,6 +39,597 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # === DASHBOARD ===
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Get dashboard summary
+      description: Returns overview stats for the logged-in user
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+
+  # === EXPENSES ===
+  /expenses:
+    get:
+      operationId: listExpenses
+      tags: [expenses]
+      summary: List expenses
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: category
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of expenses
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListExpensesResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+    post:
+      operationId: createExpense
+      tags: [expenses]
+      summary: Create an expense
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateExpenseBody"
+      responses:
+        "201":
+          description: Expense created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Expense"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+
+  /expenses/summary:
+    get:
+      operationId: getExpenseSummary
+      tags: [expenses]
+      summary: Get expense summary by category and time period
+      responses:
+        "200":
+          description: Expense summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExpenseSummary"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+
+  /expenses/{id}:
+    get:
+      operationId: getExpense
+      tags: [expenses]
+      summary: Get an expense by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Expense
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Expense"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+    patch:
+      operationId: updateExpense
+      tags: [expenses]
+      summary: Update an expense
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateExpenseBody"
+      responses:
+        "200":
+          description: Updated expense
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Expense"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+    delete:
+      operationId: deleteExpense
+      tags: [expenses]
+      summary: Delete an expense
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+
+  # === SAVINGS GOALS ===
+  /goals:
+    get:
+      operationId: listGoals
+      tags: [goals]
+      summary: List savings goals
+      responses:
+        "200":
+          description: List of savings goals
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListGoalsResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+    post:
+      operationId: createGoal
+      tags: [goals]
+      summary: Create a savings goal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateGoalBody"
+      responses:
+        "201":
+          description: Goal created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Goal"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+
+  /goals/{id}:
+    patch:
+      operationId: updateGoal
+      tags: [goals]
+      summary: Update a savings goal
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateGoalBody"
+      responses:
+        "200":
+          description: Updated goal
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Goal"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+    delete:
+      operationId: deleteGoal
+      tags: [goals]
+      summary: Delete a savings goal
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+
+  # === INSTALLMENTS ===
+  /installments:
+    get:
+      operationId: listInstallments
+      tags: [installments]
+      summary: List installment entries
+      responses:
+        "200":
+          description: List of installments
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListInstallmentsResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+    post:
+      operationId: createInstallment
+      tags: [installments]
+      summary: Create an installment entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateInstallmentBody"
+      responses:
+        "201":
+          description: Installment created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Installment"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+
+  /installments/upcoming:
+    get:
+      operationId: getUpcomingInstallments
+      tags: [installments]
+      summary: Get installments due within 7 days
+      responses:
+        "200":
+          description: Upcoming installments
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListInstallmentsResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+
+  /installments/{id}:
+    patch:
+      operationId: updateInstallment
+      tags: [installments]
+      summary: Update an installment entry
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateInstallmentBody"
+      responses:
+        "200":
+          description: Updated installment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Installment"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+    delete:
+      operationId: deleteInstallment
+      tags: [installments]
+      summary: Delete an installment entry
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+
+  # === WARRANTIES ===
+  /warranties:
+    get:
+      operationId: listWarranties
+      tags: [warranties]
+      summary: List warranties
+      responses:
+        "200":
+          description: List of warranties
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListWarrantiesResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+    post:
+      operationId: createWarranty
+      tags: [warranties]
+      summary: Create a warranty entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateWarrantyBody"
+      responses:
+        "201":
+          description: Warranty created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Warranty"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+
+  /warranties/expiring-soon:
+    get:
+      operationId: getExpiringSoonWarranties
+      tags: [warranties]
+      summary: Get warranties expiring within 30 days
+      responses:
+        "200":
+          description: Warranties expiring soon
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListWarrantiesResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+
+  /warranties/{id}:
+    patch:
+      operationId: updateWarranty
+      tags: [warranties]
+      summary: Update a warranty entry
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateWarrantyBody"
+      responses:
+        "200":
+          description: Updated warranty
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Warranty"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+    delete:
+      operationId: deleteWarranty
+      tags: [warranties]
+      summary: Delete a warranty entry
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+
+  # === TIPS ===
+  /tips:
+    get:
+      operationId: listTips
+      tags: [tips]
+      summary: List money-saving tips and income ideas
+      responses:
+        "200":
+          description: List of tips
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListTipsResponse"
+
+  # === OBJECT STORAGE ===
+  /storage/uploads/request-url:
+    post:
+      tags: [Storage]
+      operationId: requestUploadUrl
+      summary: Request a presigned URL for file upload
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UploadUrlRequest'
+      responses:
+        '200':
+          description: Presigned upload URL generated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadUrlResponse'
+        '400':
+          description: Missing or invalid required fields.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Failed to generate upload URL.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /storage/public-objects/{filePath}:
+    get:
+      tags: [Storage]
+      operationId: getPublicObject
+      summary: Serve a public asset from PUBLIC_OBJECT_SEARCH_PATHS
+      parameters:
+        - name: filePath
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Object content streamed with correct Content-Type.
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: File not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /storage/objects/{objectPath}:
+    get:
+      tags: [Storage]
+      operationId: getStorageObject
+      summary: Serve an object entity from PRIVATE_OBJECT_DIR
+      parameters:
+        - name: objectPath
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Object content streamed with correct Content-Type.
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Object not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +640,411 @@ components:
       required:
         - status
 
+    ErrorEnvelope:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+
+    # === DASHBOARD ===
+    DashboardSummary:
+      type: object
+      required: [totalExpensesThisMonth, totalSaved, activeGoals, upcomingDues, expiringSoonCount]
+      properties:
+        totalExpensesThisMonth:
+          type: number
+          description: Total expense amount this month
+        totalSaved:
+          type: number
+          description: Total amount saved across all active goals
+        activeGoals:
+          type: integer
+          description: Number of active savings goals
+        upcomingDues:
+          type: integer
+          description: Number of installments due within 7 days
+        expiringSoonCount:
+          type: integer
+          description: Number of warranties expiring within 30 days
+        recentExpenses:
+          type: array
+          items:
+            $ref: "#/components/schemas/Expense"
+        categoryBreakdown:
+          type: array
+          items:
+            $ref: "#/components/schemas/CategoryTotal"
+
+    CategoryTotal:
+      type: object
+      required: [category, total]
+      properties:
+        category:
+          type: string
+        total:
+          type: number
+
+    # === EXPENSES ===
+    Expense:
+      type: object
+      required: [id, userId, amount, category, description, date, createdAt]
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        amount:
+          type: number
+        category:
+          type: string
+        description:
+          type: string
+        date:
+          type: string
+          format: date
+        notes:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+
+    ListExpensesResponse:
+      type: object
+      required: [expenses, total]
+      properties:
+        expenses:
+          type: array
+          items:
+            $ref: "#/components/schemas/Expense"
+        total:
+          type: integer
+
+    CreateExpenseBody:
+      type: object
+      required: [amount, category, description, date]
+      properties:
+        amount:
+          type: number
+          minimum: 0.01
+        category:
+          type: string
+          minLength: 1
+        description:
+          type: string
+          minLength: 1
+        date:
+          type: string
+          format: date
+        notes:
+          type: string
+
+    UpdateExpenseBody:
+      type: object
+      properties:
+        amount:
+          type: number
+          minimum: 0.01
+        category:
+          type: string
+        description:
+          type: string
+        date:
+          type: string
+          format: date
+        notes:
+          type: string
+
+    ExpenseSummary:
+      type: object
+      required: [thisMonth, lastMonth, byCategory, monthlyTrend]
+      properties:
+        thisMonth:
+          type: number
+        lastMonth:
+          type: number
+        byCategory:
+          type: array
+          items:
+            $ref: "#/components/schemas/CategoryTotal"
+        monthlyTrend:
+          type: array
+          items:
+            type: object
+            required: [month, total]
+            properties:
+              month:
+                type: string
+              total:
+                type: number
+
+    # === GOALS ===
+    Goal:
+      type: object
+      required: [id, userId, name, targetAmount, savedAmount, period, createdAt]
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        name:
+          type: string
+        targetAmount:
+          type: number
+        savedAmount:
+          type: number
+        period:
+          type: string
+          enum: [weekly, monthly]
+        notes:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+
+    ListGoalsResponse:
+      type: object
+      required: [goals]
+      properties:
+        goals:
+          type: array
+          items:
+            $ref: "#/components/schemas/Goal"
+
+    CreateGoalBody:
+      type: object
+      required: [name, targetAmount, period]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        targetAmount:
+          type: number
+          minimum: 0.01
+        savedAmount:
+          type: number
+          minimum: 0
+        period:
+          type: string
+          enum: [weekly, monthly]
+        notes:
+          type: string
+
+    UpdateGoalBody:
+      type: object
+      properties:
+        name:
+          type: string
+        targetAmount:
+          type: number
+          minimum: 0.01
+        savedAmount:
+          type: number
+          minimum: 0
+        period:
+          type: string
+          enum: [weekly, monthly]
+        notes:
+          type: string
+
+    # === INSTALLMENTS ===
+    Installment:
+      type: object
+      required: [id, userId, name, amount, dueDate, status, createdAt]
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        name:
+          type: string
+        amount:
+          type: number
+        dueDate:
+          type: string
+          format: date
+        status:
+          type: string
+          enum: [pending, paid, overdue]
+        notes:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+
+    ListInstallmentsResponse:
+      type: object
+      required: [installments]
+      properties:
+        installments:
+          type: array
+          items:
+            $ref: "#/components/schemas/Installment"
+
+    CreateInstallmentBody:
+      type: object
+      required: [name, amount, dueDate]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        amount:
+          type: number
+          minimum: 0.01
+        dueDate:
+          type: string
+          format: date
+        status:
+          type: string
+          enum: [pending, paid, overdue]
+        notes:
+          type: string
+
+    UpdateInstallmentBody:
+      type: object
+      properties:
+        name:
+          type: string
+        amount:
+          type: number
+          minimum: 0.01
+        dueDate:
+          type: string
+          format: date
+        status:
+          type: string
+          enum: [pending, paid, overdue]
+        notes:
+          type: string
+
+    # === WARRANTIES ===
+    Warranty:
+      type: object
+      required: [id, userId, productName, purchaseDate, expiryDate, createdAt]
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        productName:
+          type: string
+        store:
+          type: string
+          nullable: true
+        purchaseDate:
+          type: string
+          format: date
+        expiryDate:
+          type: string
+          format: date
+        receiptPath:
+          type: string
+          nullable: true
+          description: Object path for the receipt image stored in object storage
+        notes:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+
+    ListWarrantiesResponse:
+      type: object
+      required: [warranties]
+      properties:
+        warranties:
+          type: array
+          items:
+            $ref: "#/components/schemas/Warranty"
+
+    CreateWarrantyBody:
+      type: object
+      required: [productName, purchaseDate, expiryDate]
+      properties:
+        productName:
+          type: string
+          minLength: 1
+        store:
+          type: string
+        purchaseDate:
+          type: string
+          format: date
+        expiryDate:
+          type: string
+          format: date
+        receiptPath:
+          type: string
+          description: Object path returned from object storage upload
+        notes:
+          type: string
+
+    UpdateWarrantyBody:
+      type: object
+      properties:
+        productName:
+          type: string
+        store:
+          type: string
+        purchaseDate:
+          type: string
+          format: date
+        expiryDate:
+          type: string
+          format: date
+        receiptPath:
+          type: string
+        notes:
+          type: string
+
+    # === TIPS ===
+    Tip:
+      type: object
+      required: [id, title, description, category]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+          enum: [saving, income, budgeting, investing]
+
+    ListTipsResponse:
+      type: object
+      required: [tips]
+      properties:
+        tips:
+          type: array
+          items:
+            $ref: "#/components/schemas/Tip"
+
+    # === STORAGE ===
+    UploadUrlRequest:
+      type: object
+      required: [name, size, contentType]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        size:
+          type: integer
+          minimum: 1
+        contentType:
+          type: string
+          minLength: 1
+    UploadUrlResponse:
+      type: object
+      required: [uploadURL, objectPath]
+      properties:
+        uploadURL:
+          type: string
+          format: uri
+        objectPath:
+          type: string
+        metadata:
+          $ref: '#/components/schemas/UploadUrlRequest'
