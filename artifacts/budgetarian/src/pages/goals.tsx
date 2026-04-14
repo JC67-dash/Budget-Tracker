@@ -6,6 +6,7 @@ import {
   useUpdateGoal,
   useDeleteGoal,
   getGetDashboardSummaryQueryKey,
+  type ListGoalsQueryResult,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Plus, Trash2, Target, Pencil } from "lucide-react";
@@ -36,14 +37,7 @@ const updateSavedSchema = z.object({
   savedAmount: z.coerce.number().min(0, "Amount cannot be negative"),
 });
 
-type Goal = {
-  id: number;
-  name: string;
-  targetAmount: number;
-  savedAmount: number;
-  period: string;
-  notes?: string | null;
-};
+type Goal = ListGoalsQueryResult["goals"][number];
 
 export default function Goals() {
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -64,7 +58,7 @@ export default function Goals() {
         addForm.reset();
         toast({ title: "Goal created successfully" });
       },
-      onError: (err: any) => {
+      onError: (err: Error) => {
         toast({ title: "Failed to create goal", description: err.message, variant: "destructive" });
       },
     },
@@ -255,7 +249,7 @@ export default function Goals() {
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8 text-muted-foreground hover:text-primary"
-                        onClick={() => openEdit(goal as any)}
+                        onClick={() => openEdit(goal)}
                         data-testid={`button-edit-goal-${goal.id}`}
                       >
                         <Pencil className="h-3.5 w-3.5" />

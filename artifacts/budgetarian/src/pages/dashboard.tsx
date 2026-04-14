@@ -168,7 +168,7 @@ export default function Dashboard() {
                     axisLine={false}
                   />
                   <Tooltip
-                    formatter={(v: any) => [`₱${Number(v).toFixed(2)}`, "Amount"]}
+                    formatter={(v: number) => [`₱${Number(v).toFixed(2)}`, "Amount"]}
                     contentStyle={{
                       background: "hsl(var(--card))",
                       border: "1px solid hsl(var(--border))",

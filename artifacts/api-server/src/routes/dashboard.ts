@@ -1,5 +1,5 @@
 import { Router, type IRouter, type Request, type Response } from "express";
-import { eq, and, sql } from "drizzle-orm";
+import { eq, and, sql, desc } from "drizzle-orm";
 import { db, expensesTable, goalsTable, installmentsTable, warrantiesTable } from "@workspace/db";
 import { requireAuth, type AuthRequest } from "../middleware/auth";
 
@@ -52,7 +52,7 @@ router.get("/dashboard/summary", requireAuth, async (req: Request, res: Response
         .select()
         .from(expensesTable)
         .where(eq(expensesTable.userId, userId))
-        .orderBy(expensesTable.createdAt)
+        .orderBy(desc(expensesTable.createdAt))
         .limit(5),
       db
         .select({

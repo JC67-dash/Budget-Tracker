@@ -58,7 +58,7 @@ export default function Installments() {
         form.reset();
         toast({ title: "Installment added" });
       },
-      onError: (err: any) => {
+      onError: (err: Error) => {
         toast({ title: "Failed to add installment", description: err.message, variant: "destructive" });
       },
     },

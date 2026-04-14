@@ -53,7 +53,7 @@ export default function Warranties() {
         form.reset();
         toast({ title: "Warranty added" });
       },
-      onError: (err: any) => {
+      onError: (err: Error) => {
         toast({ title: "Failed to add warranty", description: err.message, variant: "destructive" });
       },
     },

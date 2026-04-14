@@ -4,12 +4,13 @@ import {
   useListExpenses, 
   useCreateExpense, 
   useDeleteExpense,
+  useGetExpenseSummary,
   getListExpensesQueryKey,
   getGetDashboardSummaryQueryKey,
   getGetExpenseSummaryQueryKey
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2, Receipt, Search, Filter } from "lucide-react";
+import { Plus, Trash2, Receipt, Search, Filter, TrendingUp, TrendingDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -21,6 +22,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+} from "recharts";
 
 const expenseSchema = z.object({
   amount: z.coerce.number().min(0.01, "Amount must be greater than 0"),
@@ -54,6 +64,16 @@ export default function Expenses() {
     { category: categoryFilter !== "all" ? categoryFilter : undefined },
     { query: { queryKey: getListExpensesQueryKey({ category: categoryFilter !== "all" ? categoryFilter : undefined }) } }
   );
+
+  const { data: summaryData } = useGetExpenseSummary({
+    query: { queryKey: getGetExpenseSummaryQueryKey() },
+  });
+
+  const trendData = summaryData?.monthlyTrend ?? [];
+  const thisMonth = summaryData?.thisMonth ?? 0;
+  const lastMonth = summaryData?.lastMonth ?? 0;
+  const trendPct = lastMonth > 0 ? ((thisMonth - lastMonth) / lastMonth) * 100 : null;
+  const trendUp = trendPct !== null && trendPct > 0;
 
   const createExpense = useCreateExpense({
     mutation: {
@@ -192,6 +212,62 @@ export default function Expenses() {
             </Form>
           </DialogContent>
         </Dialog>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="md:col-span-2">
+          <Card className="border-none shadow-sm bg-card h-full">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base font-semibold">Monthly Spending Trend</CardTitle>
+              <CardDescription className="text-xs">Your spending over the past months</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {trendData.length === 0 ? (
+                <div className="h-36 flex items-center justify-center text-muted-foreground text-sm">No trend data yet</div>
+              ) : (
+                <ResponsiveContainer width="100%" height={140}>
+                  <AreaChart data={trendData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="trendGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.25} />
+                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                    <XAxis dataKey="month" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} />
+                    <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} width={48} tickFormatter={(v: number) => `₱${v}`} />
+                    <Tooltip
+                      formatter={(v: number) => [`₱${Number(v).toFixed(2)}`, "Total"]}
+                      contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: 12 }}
+                    />
+                    <Area type="monotone" dataKey="total" stroke="hsl(var(--primary))" strokeWidth={2} fill="url(#trendGrad)" dot={false} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="flex flex-col gap-4">
+          <Card className="border-none shadow-sm bg-card flex-1">
+            <CardContent className="pt-6">
+              <p className="text-xs text-muted-foreground mb-1">This Month</p>
+              <p className="text-2xl font-bold text-foreground">₱{thisMonth.toFixed(2)}</p>
+              {trendPct !== null && (
+                <div className={`flex items-center gap-1 mt-1 text-xs ${trendUp ? "text-destructive" : "text-green-600"}`}>
+                  {trendUp ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
+                  <span>{Math.abs(trendPct).toFixed(1)}% vs last month</span>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+          <Card className="border-none shadow-sm bg-card flex-1">
+            <CardContent className="pt-6">
+              <p className="text-xs text-muted-foreground mb-1">Last Month</p>
+              <p className="text-2xl font-bold text-foreground">₱{lastMonth.toFixed(2)}</p>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       <Card className="border-none shadow-sm bg-card overflow-hidden">
