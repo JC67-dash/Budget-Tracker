@@ -8,12 +8,30 @@ import {
   DeleteWarrantyParams,
 } from "@workspace/api-zod";
 import { requireAuth, type AuthRequest } from "../middleware/auth";
+import { ObjectStorageService } from "../lib/objectStorage";
+import { ObjectPermission } from "../lib/objectAcl";
 
 const router: IRouter = Router();
+const objectStorageService = new ObjectStorageService();
 
 function toDateStr(d: Date | string | undefined): string | undefined {
   if (d === undefined) return undefined;
   return d instanceof Date ? d.toISOString().slice(0, 10) : String(d);
+}
+
+/**
+ * Set private owner ACL on a receipt object.
+ * Best-effort: log on failure but do not block the warranty save.
+ */
+async function trySetReceiptOwner(receiptPath: string, userId: string, log: Request["log"]): Promise<void> {
+  try {
+    await objectStorageService.trySetObjectEntityAclPolicy(receiptPath, {
+      owner: userId,
+      visibility: "private",
+    });
+  } catch (err) {
+    log.warn({ err }, "Failed to set receipt ACL — proceeding without ACL");
+  }
 }
 
 router.get("/warranties", requireAuth, async (req: Request, res: Response): Promise<void> => {
@@ -35,7 +53,7 @@ router.post("/warranties", requireAuth, async (req: Request, res: Response): Pro
     return;
   }
 
-  const { purchaseDate, expiryDate, ...rest } = parsed.data;
+  const { purchaseDate, expiryDate, receiptPath, ...rest } = parsed.data;
   const [warranty] = await db
     .insert(warrantiesTable)
     .values({
@@ -43,8 +61,14 @@ router.post("/warranties", requireAuth, async (req: Request, res: Response): Pro
       userId,
       purchaseDate: toDateStr(purchaseDate)!,
       expiryDate: toDateStr(expiryDate)!,
+      receiptPath,
     })
     .returning();
+
+  // Set owner ACL on the uploaded receipt so only this user can read it
+  if (receiptPath) {
+    await trySetReceiptOwner(receiptPath, userId, req.log);
+  }
 
   res.status(201).json(warranty);
 });
@@ -85,10 +109,11 @@ router.patch("/warranties/:id", requireAuth, async (req: Request, res: Response)
     return;
   }
 
-  const { purchaseDate, expiryDate, ...rest } = parsed.data;
+  const { purchaseDate, expiryDate, receiptPath, ...rest } = parsed.data;
   const updateData: Record<string, unknown> = { ...rest };
   if (purchaseDate !== undefined) updateData.purchaseDate = toDateStr(purchaseDate);
   if (expiryDate !== undefined) updateData.expiryDate = toDateStr(expiryDate);
+  if (receiptPath !== undefined) updateData.receiptPath = receiptPath;
 
   const [warranty] = await db
     .update(warrantiesTable)
@@ -99,6 +124,11 @@ router.patch("/warranties/:id", requireAuth, async (req: Request, res: Response)
   if (!warranty) {
     res.status(404).json({ error: "Warranty not found" });
     return;
+  }
+
+  // Set owner ACL if a new receipt was provided
+  if (receiptPath) {
+    await trySetReceiptOwner(receiptPath, userId, req.log);
   }
 
   res.json(warranty);

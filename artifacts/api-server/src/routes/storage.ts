@@ -5,6 +5,7 @@ import {
   RequestUploadUrlResponse,
 } from "@workspace/api-zod";
 import { ObjectStorageService, ObjectNotFoundError } from "../lib/objectStorage";
+import { ObjectPermission } from "../lib/objectAcl";
 import { requireAuth, type AuthRequest } from "../middleware/auth";
 
 const router: IRouter = Router();
@@ -83,14 +84,27 @@ router.get("/storage/public-objects/*filePath", async (req: Request, res: Respon
  *
  * Serve object entities from PRIVATE_OBJECT_DIR.
  * Auth-gated: only authenticated users may access private objects.
+ * ACL-enforced: the requesting user must be the owner of the object.
  */
 router.get("/storage/objects/*path", requireAuth, async (req: Request, res: Response) => {
+  const { userId } = req as AuthRequest;
   const raw = req.params.path;
   const wildcardPath = Array.isArray(raw) ? raw.join("/") : raw;
   const objectPath = `/objects/${wildcardPath}`;
 
   try {
     const objectFile = await objectStorageService.getObjectEntityFile(objectPath);
+
+    const canAccess = await objectStorageService.canAccessObjectEntity({
+      userId,
+      objectFile,
+      requestedPermission: ObjectPermission.READ,
+    });
+    if (!canAccess) {
+      res.status(403).json({ error: "Forbidden" });
+      return;
+    }
+
     const response = await objectStorageService.downloadObject(objectFile);
 
     res.status(response.status);
