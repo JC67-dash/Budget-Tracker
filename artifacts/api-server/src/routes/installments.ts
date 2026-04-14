@@ -1,4 +1,4 @@
-import { Router, type IRouter } from "express";
+import { Router, type IRouter, type Request, type Response } from "express";
 import { eq, and, sql } from "drizzle-orm";
 import { db, installmentsTable } from "@workspace/db";
 import {
@@ -7,56 +7,55 @@ import {
   UpdateInstallmentBody,
   DeleteInstallmentParams,
 } from "@workspace/api-zod";
-import { getAuth } from "@clerk/express";
+import { requireAuth, type AuthRequest } from "../middleware/auth";
 
 const router: IRouter = Router();
 
-function requireAuth(req: any, res: any, next: any) {
-  const auth = getAuth(req);
-  const userId = auth?.userId;
-  if (!userId) {
-    res.status(401).json({ error: "Unauthorized" });
-    return;
-  }
-  req.userId = userId;
-  next();
+function toDateStr(d: Date | string | undefined): string | undefined {
+  if (d === undefined) return undefined;
+  return d instanceof Date ? d.toISOString().slice(0, 10) : String(d);
 }
 
-function mapInstallment(i: any) {
+function mapInstallment(i: typeof installmentsTable.$inferSelect) {
   return { ...i, amount: Number(i.amount) };
 }
 
-router.get("/installments", requireAuth, async (req: any, res): Promise<void> => {
+router.get("/installments", requireAuth, async (req: Request, res: Response): Promise<void> => {
+  const { userId } = req as AuthRequest;
   const installments = await db
     .select()
     .from(installmentsTable)
-    .where(eq(installmentsTable.userId, req.userId))
+    .where(eq(installmentsTable.userId, userId))
     .orderBy(installmentsTable.dueDate);
 
   res.json({ installments: installments.map(mapInstallment) });
 });
 
-router.post("/installments", requireAuth, async (req: any, res): Promise<void> => {
+router.post("/installments", requireAuth, async (req: Request, res: Response): Promise<void> => {
+  const { userId } = req as AuthRequest;
   const parsed = CreateInstallmentBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
 
+  const { amount, dueDate, status, ...rest } = parsed.data;
   const [installment] = await db
     .insert(installmentsTable)
     .values({
-      ...parsed.data,
-      userId: req.userId,
-      amount: String(parsed.data.amount),
-      status: parsed.data.status ?? "pending",
+      ...rest,
+      userId,
+      amount: String(amount),
+      dueDate: toDateStr(dueDate)!,
+      status: status ?? "pending",
     })
     .returning();
 
   res.status(201).json(mapInstallment(installment));
 });
 
-router.get("/installments/upcoming", requireAuth, async (req: any, res): Promise<void> => {
+router.get("/installments/upcoming", requireAuth, async (req: Request, res: Response): Promise<void> => {
+  const { userId } = req as AuthRequest;
   const sevenDaysLater = new Date();
   sevenDaysLater.setDate(sevenDaysLater.getDate() + 7);
   const today = new Date().toISOString().slice(0, 10);
@@ -67,7 +66,7 @@ router.get("/installments/upcoming", requireAuth, async (req: any, res): Promise
     .from(installmentsTable)
     .where(
       and(
-        eq(installmentsTable.userId, req.userId),
+        eq(installmentsTable.userId, userId),
         sql`due_date >= ${today}`,
         sql`due_date <= ${future}`,
         eq(installmentsTable.status, "pending")
@@ -78,7 +77,8 @@ router.get("/installments/upcoming", requireAuth, async (req: any, res): Promise
   res.json({ installments: installments.map(mapInstallment) });
 });
 
-router.patch("/installments/:id", requireAuth, async (req: any, res): Promise<void> => {
+router.patch("/installments/:id", requireAuth, async (req: Request, res: Response): Promise<void> => {
+  const { userId } = req as AuthRequest;
   const params = UpdateInstallmentParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -91,13 +91,15 @@ router.patch("/installments/:id", requireAuth, async (req: any, res): Promise<vo
     return;
   }
 
-  const updateData: any = { ...parsed.data };
-  if (parsed.data.amount !== undefined) updateData.amount = String(parsed.data.amount);
+  const { amount, dueDate, ...rest } = parsed.data;
+  const updateData: Record<string, unknown> = { ...rest };
+  if (amount !== undefined) updateData.amount = String(amount);
+  if (dueDate !== undefined) updateData.dueDate = toDateStr(dueDate);
 
   const [installment] = await db
     .update(installmentsTable)
     .set(updateData)
-    .where(and(eq(installmentsTable.id, params.data.id), eq(installmentsTable.userId, req.userId)))
+    .where(and(eq(installmentsTable.id, params.data.id), eq(installmentsTable.userId, userId)))
     .returning();
 
   if (!installment) {
@@ -108,7 +110,8 @@ router.patch("/installments/:id", requireAuth, async (req: any, res): Promise<vo
   res.json(mapInstallment(installment));
 });
 
-router.delete("/installments/:id", requireAuth, async (req: any, res): Promise<void> => {
+router.delete("/installments/:id", requireAuth, async (req: Request, res: Response): Promise<void> => {
+  const { userId } = req as AuthRequest;
   const params = DeleteInstallmentParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -117,7 +120,7 @@ router.delete("/installments/:id", requireAuth, async (req: any, res): Promise<v
 
   const [installment] = await db
     .delete(installmentsTable)
-    .where(and(eq(installmentsTable.id, params.data.id), eq(installmentsTable.userId, req.userId)))
+    .where(and(eq(installmentsTable.id, params.data.id), eq(installmentsTable.userId, userId)))
     .returning();
 
   if (!installment) {

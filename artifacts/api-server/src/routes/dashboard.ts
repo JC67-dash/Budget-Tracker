@@ -1,22 +1,12 @@
-import { Router, type IRouter } from "express";
+import { Router, type IRouter, type Request, type Response } from "express";
 import { eq, and, sql } from "drizzle-orm";
 import { db, expensesTable, goalsTable, installmentsTable, warrantiesTable } from "@workspace/db";
-import { getAuth } from "@clerk/express";
+import { requireAuth, type AuthRequest } from "../middleware/auth";
 
 const router: IRouter = Router();
 
-function requireAuth(req: any, res: any, next: any) {
-  const auth = getAuth(req);
-  const userId = auth?.userId;
-  if (!userId) {
-    res.status(401).json({ error: "Unauthorized" });
-    return;
-  }
-  req.userId = userId;
-  next();
-}
-
-router.get("/dashboard/summary", requireAuth, async (req: any, res): Promise<void> => {
+router.get("/dashboard/summary", requireAuth, async (req: Request, res: Response): Promise<void> => {
+  const { userId } = req as AuthRequest;
   const now = new Date();
   const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
   const sevenDaysLater = new Date();
@@ -32,17 +22,17 @@ router.get("/dashboard/summary", requireAuth, async (req: any, res): Promise<voi
       db
         .select({ total: sql<number>`coalesce(sum(amount::numeric), 0)` })
         .from(expensesTable)
-        .where(and(eq(expensesTable.userId, req.userId), sql`date >= ${thisMonthStart}`)),
+        .where(and(eq(expensesTable.userId, userId), sql`date >= ${thisMonthStart}`)),
       db
         .select()
         .from(goalsTable)
-        .where(eq(goalsTable.userId, req.userId)),
+        .where(eq(goalsTable.userId, userId)),
       db
         .select({ count: sql<number>`count(*)` })
         .from(installmentsTable)
         .where(
           and(
-            eq(installmentsTable.userId, req.userId),
+            eq(installmentsTable.userId, userId),
             eq(installmentsTable.status, "pending"),
             sql`due_date >= ${today}`,
             sql`due_date <= ${upcoming7}`
@@ -53,7 +43,7 @@ router.get("/dashboard/summary", requireAuth, async (req: any, res): Promise<voi
         .from(warrantiesTable)
         .where(
           and(
-            eq(warrantiesTable.userId, req.userId),
+            eq(warrantiesTable.userId, userId),
             sql`expiry_date >= ${today}`,
             sql`expiry_date <= ${upcoming30}`
           )
@@ -61,7 +51,7 @@ router.get("/dashboard/summary", requireAuth, async (req: any, res): Promise<voi
       db
         .select()
         .from(expensesTable)
-        .where(eq(expensesTable.userId, req.userId))
+        .where(eq(expensesTable.userId, userId))
         .orderBy(expensesTable.createdAt)
         .limit(5),
       db
@@ -70,7 +60,7 @@ router.get("/dashboard/summary", requireAuth, async (req: any, res): Promise<voi
           total: sql<number>`coalesce(sum(amount::numeric), 0)`,
         })
         .from(expensesTable)
-        .where(and(eq(expensesTable.userId, req.userId), sql`date >= ${thisMonthStart}`))
+        .where(and(eq(expensesTable.userId, userId), sql`date >= ${thisMonthStart}`))
         .groupBy(expensesTable.category),
     ]);
 
