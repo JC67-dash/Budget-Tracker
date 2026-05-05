@@ -24,16 +24,24 @@ public class AppConfig implements WebMvcConfigurer {
         URI uri = URI.create(rawUrl);
         String host = uri.getHost();
         int port = uri.getPort() == -1 ? 5432 : uri.getPort();
-        String dbName = uri.getPath().replaceFirst("^/", "");
-        String userInfo = uri.getUserInfo();
-        String username = userInfo;
-        String password = "";
-        if (userInfo != null && userInfo.contains(":")) {
-            username = userInfo.substring(0, userInfo.indexOf(':'));
-            password = userInfo.substring(userInfo.indexOf(':') + 1);
-        }
+        String path = uri.getPath();
+        String rawQuery = uri.getRawQuery();
 
-        String jdbcUrl = "jdbc:postgresql://" + host + ":" + port + "/" + dbName;
+        String jdbcUrl = "jdbc:postgresql://" + host + ":" + port + path
+                + (rawQuery != null && !rawQuery.isEmpty() ? "?" + rawQuery : "");
+
+        String userInfo = uri.getUserInfo();
+        String username = "";
+        String password = "";
+        if (userInfo != null) {
+            int sep = userInfo.indexOf(':');
+            if (sep >= 0) {
+                username = userInfo.substring(0, sep);
+                password = userInfo.substring(sep + 1);
+            } else {
+                username = userInfo;
+            }
+        }
 
         HikariDataSource ds = new HikariDataSource();
         ds.setJdbcUrl(jdbcUrl);

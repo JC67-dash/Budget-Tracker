@@ -132,7 +132,7 @@ public class GoalsController {
     }
 
     @DeleteMapping("/goals/{id}")
-    public ResponseEntity<Void> delete(
+    public ResponseEntity<?> delete(
             @RequestAttribute("userId") String userId,
             @PathVariable int id) {
 
@@ -141,7 +141,7 @@ public class GoalsController {
             (rs, n) -> Map.of("id", rs.getInt("id")), id, userId);
 
         if (results.isEmpty()) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(404).body(Map.of("error", "Goal not found"));
         }
         return ResponseEntity.noContent().build();
     }

@@ -162,7 +162,7 @@ public class WarrantiesController {
     }
 
     @DeleteMapping("/warranties/{id}")
-    public ResponseEntity<Void> delete(
+    public ResponseEntity<?> delete(
             @RequestAttribute("userId") String userId,
             @PathVariable int id) {
 
@@ -171,7 +171,7 @@ public class WarrantiesController {
             (rs, n) -> Map.of("id", rs.getInt("id")), id, userId);
 
         if (results.isEmpty()) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(404).body(Map.of("error", "Warranty not found"));
         }
         return ResponseEntity.noContent().build();
     }

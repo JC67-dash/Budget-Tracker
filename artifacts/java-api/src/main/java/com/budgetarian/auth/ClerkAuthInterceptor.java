@@ -20,11 +20,12 @@ public class ClerkAuthInterceptor implements HandlerInterceptor {
     public static final String USER_ID_ATTRIBUTE = "userId";
 
     private volatile JwkProvider jwkProvider;
-    private volatile String jwksUrl;
+    private volatile String clerkDomain;
 
-    private synchronized JwkProvider getJwkProvider() {
+    private synchronized void ensureInitialized() {
         if (jwkProvider == null) {
-            jwksUrl = resolveJwksUrl();
+            clerkDomain = resolveClerkDomain();
+            String jwksUrl = "https://" + clerkDomain + "/.well-known/jwks.json";
             try {
                 jwkProvider = new JwkProviderBuilder(new URL(jwksUrl))
                         .cached(10, 24, TimeUnit.HOURS)
@@ -34,13 +35,16 @@ public class ClerkAuthInterceptor implements HandlerInterceptor {
                 throw new RuntimeException("Failed to initialize JWKS provider from: " + jwksUrl, e);
             }
         }
-        return jwkProvider;
     }
 
-    private String resolveJwksUrl() {
+    private String resolveClerkDomain() {
         String customUrl = System.getenv("CLERK_JWKS_URL");
         if (customUrl != null && !customUrl.isBlank()) {
-            return customUrl;
+            try {
+                return new URL(customUrl).getHost();
+            } catch (Exception e) {
+                throw new RuntimeException("Invalid CLERK_JWKS_URL: " + customUrl, e);
+            }
         }
 
         String pubKey = System.getenv("VITE_CLERK_PUBLISHABLE_KEY");
@@ -63,8 +67,7 @@ public class ClerkAuthInterceptor implements HandlerInterceptor {
 
         String decoded = new String(
             Base64.getDecoder().decode(base64Part), StandardCharsets.UTF_8);
-        String domain = decoded.replace("$", "").trim();
-        return "https://" + domain + "/.well-known/jwks.json";
+        return decoded.replace("$", "").trim();
     }
 
     @Override
@@ -72,22 +75,25 @@ public class ClerkAuthInterceptor implements HandlerInterceptor {
                              Object handler) throws Exception {
         String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType("application/json");
-            response.getWriter().write("{\"error\":\"Unauthorized\"}");
+            sendUnauthorized(response, "Unauthorized");
             return false;
         }
 
         String token = authHeader.substring(7);
         try {
+            ensureInitialized();
+
             DecodedJWT decoded = JWT.decode(token);
             String kid = decoded.getKeyId();
 
-            JwkProvider provider = getJwkProvider();
-            RSAPublicKey publicKey = (RSAPublicKey) provider.get(kid).getPublicKey();
-
+            RSAPublicKey publicKey = (RSAPublicKey) jwkProvider.get(kid).getPublicKey();
             Algorithm algorithm = Algorithm.RSA256(publicKey, null);
-            JWT.require(algorithm).build().verify(token);
+
+            String expectedIssuer = "https://" + clerkDomain;
+            JWT.require(algorithm)
+                .withIssuer(expectedIssuer)
+                .build()
+                .verify(token);
 
             String userId = decoded.getSubject();
             if (userId == null || userId.isBlank()) {
