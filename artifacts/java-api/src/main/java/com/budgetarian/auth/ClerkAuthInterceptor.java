@@ -60,13 +60,9 @@ public class ClerkAuthInterceptor implements HandlerInterceptor {
         }
 
         String base64Part = parts[2];
-        int mod = base64Part.length() % 4;
-        if (mod != 0) {
-            base64Part = base64Part + "=".repeat(4 - mod);
-        }
 
         String decoded = new String(
-            Base64.getDecoder().decode(base64Part), StandardCharsets.UTF_8);
+            Base64.getUrlDecoder().decode(base64Part), StandardCharsets.UTF_8);
         return decoded.replace("$", "").trim();
     }
 

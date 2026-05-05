@@ -65,7 +65,8 @@ public class AppConfig implements WebMvcConfigurer {
                         "/tips",
                         "/health",
                         "/healthz",
-                        "/storage/public-objects/**"
+                        "/storage/public-objects/**",
+                        "/__clerk/**"
                 );
     }
 
