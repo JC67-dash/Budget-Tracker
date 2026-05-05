@@ -177,7 +177,7 @@ export default function Warranties() {
 
                 {/* Receipt Upload */}
                 <div className="space-y-2">
-                  <FormLabel>Receipt Image (optional)</FormLabel>
+                  <label className="text-sm font-medium leading-none">Receipt Image (optional)</label>
                   <div className="flex items-center gap-3">
                     <label
                       htmlFor="receipt-upload"
