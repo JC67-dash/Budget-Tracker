@@ -1,0 +1,111 @@
+package com.budgetarian.auth;
+
+import com.auth0.jwk.JwkProvider;
+import com.auth0.jwk.JwkProviderBuilder;
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.DecodedJWT;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.web.servlet.HandlerInterceptor;
+
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.security.interfaces.RSAPublicKey;
+import java.util.Base64;
+import java.util.concurrent.TimeUnit;
+
+public class ClerkAuthInterceptor implements HandlerInterceptor {
+
+    public static final String USER_ID_ATTRIBUTE = "userId";
+
+    private volatile JwkProvider jwkProvider;
+    private volatile String jwksUrl;
+
+    private synchronized JwkProvider getJwkProvider() {
+        if (jwkProvider == null) {
+            jwksUrl = resolveJwksUrl();
+            try {
+                jwkProvider = new JwkProviderBuilder(new URL(jwksUrl))
+                        .cached(10, 24, TimeUnit.HOURS)
+                        .rateLimited(10, 1, TimeUnit.MINUTES)
+                        .build();
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to initialize JWKS provider from: " + jwksUrl, e);
+            }
+        }
+        return jwkProvider;
+    }
+
+    private String resolveJwksUrl() {
+        String customUrl = System.getenv("CLERK_JWKS_URL");
+        if (customUrl != null && !customUrl.isBlank()) {
+            return customUrl;
+        }
+
+        String pubKey = System.getenv("VITE_CLERK_PUBLISHABLE_KEY");
+        if (pubKey == null || pubKey.isBlank()) {
+            throw new IllegalStateException(
+                "Neither CLERK_JWKS_URL nor VITE_CLERK_PUBLISHABLE_KEY is set");
+        }
+
+        String[] parts = pubKey.split("_", 3);
+        if (parts.length < 3) {
+            throw new IllegalStateException(
+                "Invalid VITE_CLERK_PUBLISHABLE_KEY format: " + pubKey);
+        }
+
+        String base64Part = parts[2];
+        int mod = base64Part.length() % 4;
+        if (mod != 0) {
+            base64Part = base64Part + "=".repeat(4 - mod);
+        }
+
+        String decoded = new String(
+            Base64.getDecoder().decode(base64Part), StandardCharsets.UTF_8);
+        String domain = decoded.replace("$", "").trim();
+        return "https://" + domain + "/.well-known/jwks.json";
+    }
+
+    @Override
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response,
+                             Object handler) throws Exception {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"error\":\"Unauthorized\"}");
+            return false;
+        }
+
+        String token = authHeader.substring(7);
+        try {
+            DecodedJWT decoded = JWT.decode(token);
+            String kid = decoded.getKeyId();
+
+            JwkProvider provider = getJwkProvider();
+            RSAPublicKey publicKey = (RSAPublicKey) provider.get(kid).getPublicKey();
+
+            Algorithm algorithm = Algorithm.RSA256(publicKey, null);
+            JWT.require(algorithm).build().verify(token);
+
+            String userId = decoded.getSubject();
+            if (userId == null || userId.isBlank()) {
+                sendUnauthorized(response, "Missing subject in token");
+                return false;
+            }
+
+            request.setAttribute(USER_ID_ATTRIBUTE, userId);
+            return true;
+        } catch (Exception e) {
+            sendUnauthorized(response, "Invalid token");
+            return false;
+        }
+    }
+
+    private void sendUnauthorized(HttpServletResponse response, String message) throws Exception {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json");
+        response.getWriter().write("{\"error\":\"" + message + "\"}");
+    }
+}
