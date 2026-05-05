@@ -143,6 +143,21 @@ public class InstallmentsController {
         return ResponseEntity.ok(results.get(0));
     }
 
+    @PatchMapping("/installments/{id}/mark-paid")
+    public ResponseEntity<Map<String, Object>> markPaid(
+            @RequestAttribute("userId") String userId,
+            @PathVariable int id) {
+
+        List<Map<String, Object>> results = jdbc.query(
+            "UPDATE installments SET status = 'paid' WHERE id = ? AND user_id = ? RETURNING *",
+            this::mapInstallment, id, userId);
+
+        if (results.isEmpty()) {
+            return ResponseEntity.status(404).body(Map.of("error", "Installment not found"));
+        }
+        return ResponseEntity.ok(results.get(0));
+    }
+
     @DeleteMapping("/installments/{id}")
     public ResponseEntity<Void> delete(
             @RequestAttribute("userId") String userId,
