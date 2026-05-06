@@ -36,7 +36,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { format, parseISO, differenceInDays } from "date-fns";
+import { format, parseISO, differenceInDays, addMonths } from "date-fns";
 
 const installmentSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -422,6 +422,20 @@ export default function Installments() {
                       </div>
                     </div>
                   )}
+                  {inst.status !== "paid" && inst.monthlyAmount != null && Number(inst.monthlyAmount) > 0 && remaining > 0 && (() => {
+                    const monthly = Number(inst.monthlyAmount);
+                    const monthsLeft = Math.ceil(remaining / monthly);
+                    const payoff = addMonths(parseISO(inst.dueDate), Math.max(0, monthsLeft - 1));
+                    return (
+                      <div className="flex items-center justify-between gap-2 text-[11px] text-muted-foreground pt-1 border-t border-border/50">
+                        <span>
+                          <span className="font-medium text-foreground">{monthsLeft}</span>{" "}
+                          month{monthsLeft === 1 ? "" : "s"} left
+                        </span>
+                        <span>Payoff by {format(payoff, "MMM yyyy")}</span>
+                      </div>
+                    );
+                  })()}
                 </CardContent>
               </Card>
             );
