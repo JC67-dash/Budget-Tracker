@@ -115,9 +115,14 @@ public class ClerkProxyController {
 
         HttpHeaders responseHeaders = new HttpHeaders();
         upstreamResp.headers().map().forEach((name, values) -> {
-            if (!name.equalsIgnoreCase("transfer-encoding")) {
-                responseHeaders.addAll(name, values);
+            if (name.startsWith(":")
+                    || name.equalsIgnoreCase("transfer-encoding")
+                    || name.equalsIgnoreCase("connection")
+                    || name.equalsIgnoreCase("content-length")
+                    || name.equalsIgnoreCase("content-encoding")) {
+                return;
             }
+            responseHeaders.addAll(name, values);
         });
 
         return ResponseEntity.status(upstreamResp.statusCode())
