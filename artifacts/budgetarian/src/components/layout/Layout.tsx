@@ -72,7 +72,9 @@ export default function Layout({ children }: LayoutProps) {
       <aside className="hidden md:flex w-64 flex-col border-r border-border bg-sidebar shrink-0 h-screen sticky top-0">
         <div className="p-6 flex items-center gap-2">
           <img src={logoUrl} alt="Budgetarian" className="h-9 w-9 object-contain" />
-          <span className="font-bold text-xl tracking-tight text-foreground">Budgetarian</span>
+          <span className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-green-600 via-emerald-500 to-teal-500 bg-clip-text text-transparent">
+            Budgetarian
+          </span>
         </div>
         
         <div className="flex-1 overflow-y-auto py-4">
@@ -111,7 +113,9 @@ export default function Layout({ children }: LayoutProps) {
         <header className="md:hidden flex items-center justify-between p-4 border-b border-border bg-background sticky top-0 z-10">
           <div className="flex items-center gap-2">
             <img src={logoUrl} alt="Budgetarian" className="h-8 w-8 object-contain" />
-            <span className="font-bold text-lg text-foreground">Budgetarian</span>
+            <span className="font-extrabold text-lg tracking-tight bg-gradient-to-r from-green-600 via-emerald-500 to-teal-500 bg-clip-text text-transparent">
+              Budgetarian
+            </span>
           </div>
           
           <Sheet>
@@ -123,7 +127,9 @@ export default function Layout({ children }: LayoutProps) {
             <SheetContent side="left" className="w-64 p-0 flex flex-col bg-sidebar">
               <div className="p-6 flex items-center gap-2">
                 <img src={logoUrl} alt="Budgetarian" className="h-9 w-9 object-contain" />
-                <span className="font-bold text-xl tracking-tight text-foreground">Budgetarian</span>
+                <span className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-green-600 via-emerald-500 to-teal-500 bg-clip-text text-transparent">
+                  Budgetarian
+                </span>
               </div>
               <div className="flex-1 overflow-y-auto py-4">
                 <NavLinks />
