@@ -42,6 +42,7 @@ const installmentSchema = z.object({
   name: z.string().min(1, "Name is required"),
   amount: z.coerce.number().min(0.01, "Total amount must be greater than 0"),
   termMonths: z.coerce.number().int().min(1, "Must be at least 1 month").optional(),
+  monthlyAmount: z.coerce.number().min(0.01, "Must be greater than 0").optional(),
   dueDate: z.string().min(1, "Due date is required"),
   status: z.enum(["pending", "paid", "overdue"]),
   notes: z.string().optional(),
@@ -124,6 +125,7 @@ export default function Installments() {
       name: "",
       amount: 0,
       termMonths: undefined,
+      monthlyAmount: undefined,
       dueDate: format(new Date(), "yyyy-MM-dd"),
       status: "pending",
       notes: "",
@@ -131,9 +133,13 @@ export default function Installments() {
   });
 
   const onSubmit = (data: z.infer<typeof installmentSchema>) => {
-    const { termMonths, amount, ...rest } = data;
+    const { termMonths, monthlyAmount: enteredMonthly, amount, ...rest } = data;
     const monthlyAmount =
-      termMonths && termMonths > 0 ? Number((amount / termMonths).toFixed(2)) : undefined;
+      enteredMonthly && enteredMonthly > 0
+        ? enteredMonthly
+        : termMonths && termMonths > 0
+          ? Number((amount / termMonths).toFixed(2))
+          : undefined;
     createInstallment.mutate({
       data: {
         ...rest,
@@ -142,6 +148,16 @@ export default function Installments() {
       },
     });
   };
+
+  const watchedAmount = form.watch("amount");
+  const watchedTerm = form.watch("termMonths");
+  const watchedMonthly = form.watch("monthlyAmount");
+  const previewMonthly =
+    watchedMonthly && watchedMonthly > 0
+      ? Number(watchedMonthly)
+      : watchedTerm && watchedTerm > 0 && watchedAmount > 0
+        ? Number(watchedAmount) / Number(watchedTerm)
+        : null;
 
   const markAsPaid = (id: number) => {
     updateInstallment.mutate({ id, data: { status: "paid" } });
@@ -212,7 +228,7 @@ export default function Installments() {
                     name="termMonths"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel># of Months <span className="text-muted-foreground font-normal">(optional)</span></FormLabel>
+                        <FormLabel># of Months</FormLabel>
                         <FormControl>
                           <Input
                             type="number"
@@ -229,6 +245,36 @@ export default function Installments() {
                     )}
                   />
                 </div>
+                <FormField
+                  control={form.control}
+                  name="monthlyAmount"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Amount Per Month{" "}
+                        <span className="text-muted-foreground font-normal">
+                          (optional — leave blank to auto-calculate)
+                        </span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          min="0.01"
+                          placeholder={
+                            previewMonthly && !watchedMonthly
+                              ? `Auto: ₱${previewMonthly.toFixed(2)}`
+                              : "e.g. 5000"
+                          }
+                          value={field.value ?? ""}
+                          onChange={(e) => field.onChange(e.target.value === "" ? undefined : e.target.value)}
+                          data-testid="input-installment-monthly"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 <FormField
                   control={form.control}
                   name="dueDate"
