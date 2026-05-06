@@ -50,7 +50,7 @@ const installmentSchema = z.object({
 
 const statusConfig = {
   pending: { label: "Pending", icon: Clock, color: "text-amber-600", bg: "bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900/30" },
-  paid: { label: "Paid", icon: CheckCircle2, color: "text-teal-600", bg: "bg-teal-50 dark:bg-teal-950/30 border-teal-200 dark:border-teal-900/30" },
+  paid: { label: "Paid", icon: CheckCircle2, color: "text-green-600", bg: "bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-900/30" },
   overdue: { label: "Overdue", icon: AlertTriangle, color: "text-rose-600", bg: "bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-900/30" },
 };
 
@@ -449,7 +449,7 @@ export default function Installments() {
                         )}
                         <Badge
                           variant="secondary"
-                          className={`text-xs capitalize ${inst.status === "paid" ? "text-teal-700 bg-teal-50 dark:bg-teal-950/30" : inst.status === "overdue" ? "text-rose-700 bg-rose-50 dark:bg-rose-950/30" : ""}`}
+                          className={`text-xs capitalize ${inst.status === "paid" ? "text-green-700 bg-green-50 dark:bg-green-950/30" : inst.status === "overdue" ? "text-rose-700 bg-rose-50 dark:bg-rose-950/30" : ""}`}
                           data-testid={`status-installment-${inst.id}`}
                         >
                           {inst.status}

@@ -399,7 +399,7 @@ export default function Debts() {
       <Card
         className={`border-none shadow-sm ${
           pendingDebts.length === 0
-            ? "bg-teal-50 dark:bg-teal-950/30"
+            ? "bg-green-50 dark:bg-green-950/30"
             : "bg-rose-50 dark:bg-rose-950/30"
         }`}
         data-testid="card-debt-summary"
@@ -408,7 +408,7 @@ export default function Debts() {
           <div
             className={`h-12 w-12 rounded-xl flex items-center justify-center ${
               pendingDebts.length === 0
-                ? "bg-teal-100 dark:bg-teal-900/40 text-teal-600"
+                ? "bg-green-100 dark:bg-green-900/40 text-green-600"
                 : "bg-rose-100 dark:bg-rose-900/40 text-rose-600"
             }`}
           >
@@ -475,8 +475,8 @@ export default function Debts() {
             const cfg = isPaid
               ? {
                   Icon: CheckCircle2,
-                  color: "text-teal-600",
-                  bg: "bg-teal-50 dark:bg-teal-950/30 border-teal-200 dark:border-teal-900/30",
+                  color: "text-green-600",
+                  bg: "bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-900/30",
                 }
               : isOverdue
                 ? {
@@ -503,7 +503,7 @@ export default function Debts() {
                       <div
                         className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 ${
                           isPaid
-                            ? "bg-teal-100 dark:bg-teal-900/30"
+                            ? "bg-green-100 dark:bg-green-900/30"
                             : isOverdue
                               ? "bg-rose-100 dark:bg-rose-900/30"
                               : "bg-muted"
@@ -518,7 +518,7 @@ export default function Debts() {
                             variant="secondary"
                             className={`text-xs capitalize ${
                               isPaid
-                                ? "text-teal-700 bg-teal-100 dark:bg-teal-900/30"
+                                ? "text-green-700 bg-green-100 dark:bg-green-900/30"
                                 : isOverdue
                                   ? "text-rose-700 bg-rose-100 dark:bg-rose-900/30"
                                   : ""

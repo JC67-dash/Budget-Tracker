@@ -17,8 +17,8 @@ const CATEGORIES = [
 ];
 
 const categoryConfig = {
-  saving: { color: "text-teal-600", bg: "bg-teal-50 dark:bg-teal-950/30", icon: Wallet },
-  income: { color: "text-emerald-600", bg: "bg-emerald-50 dark:bg-emerald-950/30", icon: DollarSign },
+  saving: { color: "text-green-600", bg: "bg-green-50 dark:bg-green-950/30", icon: Wallet },
+  income: { color: "text-green-600", bg: "bg-green-50 dark:bg-green-950/30", icon: DollarSign },
   budgeting: { color: "text-indigo-600", bg: "bg-indigo-50 dark:bg-indigo-950/30", icon: BarChart2 },
   investing: { color: "text-violet-600", bg: "bg-violet-50 dark:bg-violet-950/30", icon: TrendingUp },
 };

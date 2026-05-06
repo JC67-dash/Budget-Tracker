@@ -92,8 +92,8 @@ export default function Dashboard() {
       label: "Total Saved",
       value: `₱${(summary?.totalSaved ?? 0).toLocaleString("en-PH", { minimumFractionDigits: 2 })}`,
       icon: PiggyBank,
-      color: "text-teal-600",
-      bg: "bg-teal-50 dark:bg-teal-950/30",
+      color: "text-green-600",
+      bg: "bg-green-50 dark:bg-green-950/30",
       testId: "stat-total-saved",
     },
     {
@@ -234,7 +234,7 @@ export default function Dashboard() {
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base font-semibold flex items-center gap-2">
-                  <Wallet className="h-4 w-4 text-teal-600" />
+                  <Wallet className="h-4 w-4 text-green-600" />
                   Accounts
                 </CardTitle>
                 <Link href="/accounts">
@@ -253,7 +253,7 @@ export default function Dashboard() {
                   </p>
                 </div>
               ) : (
-                <div className="p-2.5 rounded-lg bg-teal-50 dark:bg-teal-950/20 border border-teal-100 dark:border-teal-900/30" data-testid="alert-accounts-balance">
+                <div className="p-2.5 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-100 dark:border-green-900/30" data-testid="alert-accounts-balance">
                   <p className="text-sm font-medium text-foreground">
                     ₱{(summary?.accountsTotalBalance ?? 0).toLocaleString("en-PH", { minimumFractionDigits: 2 })}
                   </p>
@@ -275,7 +275,7 @@ export default function Dashboard() {
                     className={`h-4 w-4 ${
                       (summary?.outstandingDebtsCount ?? 0) > 0
                         ? "text-rose-500"
-                        : "text-teal-500"
+                        : "text-green-500"
                     }`}
                   />
                   Debts
@@ -289,8 +289,8 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               {(summary?.outstandingDebtsCount ?? 0) === 0 ? (
-                <div className="flex items-center gap-2 p-2.5 rounded-lg bg-teal-50 dark:bg-teal-950/20 border border-teal-100 dark:border-teal-900/30" data-testid="alert-debt-free">
-                  <CheckCircle2 className="h-4 w-4 text-teal-600 shrink-0" />
+                <div className="flex items-center gap-2 p-2.5 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-100 dark:border-green-900/30" data-testid="alert-debt-free">
+                  <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
                   <p className="text-sm font-medium text-foreground">You're debt-free!</p>
                 </div>
               ) : (

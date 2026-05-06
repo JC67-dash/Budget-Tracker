@@ -308,7 +308,7 @@ export default function Goals() {
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Saved</span>
-                    <span className="font-semibold text-teal-600">₱{goal.savedAmount.toLocaleString("en-PH", { minimumFractionDigits: 2 })}</span>
+                    <span className="font-semibold text-green-600">₱{goal.savedAmount.toLocaleString("en-PH", { minimumFractionDigits: 2 })}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Target</span>

@@ -28,7 +28,7 @@ export default function Home() {
         </div>
         
         <h1 className="text-5xl sm:text-7xl font-extrabold tracking-tight text-foreground mb-6 leading-[1.1]">
-          Money managed with <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-teal-400">intention.</span>
+          Money managed with <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-green-400">intention.</span>
         </h1>
         
         <p className="text-lg sm:text-xl text-muted-foreground mb-10 max-w-2xl leading-relaxed">

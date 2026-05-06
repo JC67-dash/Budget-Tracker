@@ -208,7 +208,7 @@ export default function Warranties() {
                       data-testid="input-receipt-file"
                     />
                     {receiptPath && (
-                      <span className="text-xs text-teal-600 flex items-center gap-1">
+                      <span className="text-xs text-green-600 flex items-center gap-1">
                         <Receipt className="h-3.5 w-3.5" /> Uploaded
                       </span>
                     )}
@@ -271,7 +271,7 @@ export default function Warranties() {
                   <div className="flex items-start justify-between gap-2 mb-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <ShieldCheck className={`h-4 w-4 shrink-0 ${isExpired ? "text-rose-500" : isExpiringSoon ? "text-amber-500" : "text-teal-600"}`} />
+                        <ShieldCheck className={`h-4 w-4 shrink-0 ${isExpired ? "text-rose-500" : isExpiringSoon ? "text-amber-500" : "text-green-600"}`} />
                         <h3 className="font-semibold text-foreground truncate">{w.productName}</h3>
                       </div>
                       {w.store && <p className="text-xs text-muted-foreground mt-0.5 truncate">{w.store}</p>}
@@ -340,7 +340,7 @@ export default function Warranties() {
                         href={`/api/storage${w.receiptPath}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-xs text-teal-600 hover:text-teal-700 flex items-center gap-1 underline underline-offset-2"
+                        className="text-xs text-green-600 hover:text-green-700 flex items-center gap-1 underline underline-offset-2"
                         data-testid={`link-receipt-${w.id}`}
                       >
                         <Receipt className="h-3.5 w-3.5" /> View Receipt

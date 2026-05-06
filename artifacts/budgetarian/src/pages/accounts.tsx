@@ -311,9 +311,9 @@ export default function Accounts() {
       </div>
 
       {/* Total balance banner */}
-      <Card className="border-none shadow-sm bg-gradient-to-br from-teal-50 to-emerald-50 dark:from-teal-950/30 dark:to-emerald-950/30">
+      <Card className="border-none shadow-sm bg-gradient-to-br from-green-50 to-green-50 dark:from-green-950/30 dark:to-green-950/30">
         <CardContent className="p-5 flex items-center gap-4">
-          <div className="h-12 w-12 rounded-xl bg-teal-100 dark:bg-teal-900/40 text-teal-700 dark:text-teal-300 flex items-center justify-center">
+          <div className="h-12 w-12 rounded-xl bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 flex items-center justify-center">
             <PiggyBank className="h-6 w-6" />
           </div>
           <div className="flex-1">
