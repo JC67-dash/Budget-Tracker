@@ -121,7 +121,7 @@ export default function Dashboard() {
       testId: "stat-spent-month",
     },
     {
-      label: netMonth >= 0 ? "Net This Month" : "Net Loss This Month",
+      label: "Net This Month",
       value: `${netMonth >= 0 ? "+" : "−"}₱${Math.abs(netMonth).toLocaleString("en-PH", { minimumFractionDigits: 2 })}`,
       icon: netMonth >= 0 ? TrendingUp : TrendingDown,
       color: netMonth >= 0 ? "text-emerald-600" : "text-rose-500",
