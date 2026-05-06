@@ -30,8 +30,24 @@ function mapInstallment(i: typeof installmentsTable.$inferSelect) {
   };
 }
 
+async function refreshOverdue(userId: string): Promise<void> {
+  const today = new Date().toISOString().slice(0, 10);
+  await db
+    .update(installmentsTable)
+    .set({ status: "overdue" })
+    .where(
+      and(
+        eq(installmentsTable.userId, userId),
+        eq(installmentsTable.status, "pending"),
+        sql`${installmentsTable.dueDate} < ${today}`,
+        sql`${installmentsTable.paidAmount} < ${installmentsTable.amount}`,
+      ),
+    );
+}
+
 router.get("/installments", requireAuth, async (req: Request, res: Response): Promise<void> => {
   const { userId } = req as AuthRequest;
+  await refreshOverdue(userId);
   const installments = await db
     .select()
     .from(installmentsTable)
@@ -68,6 +84,7 @@ router.post("/installments", requireAuth, async (req: Request, res: Response): P
 
 router.get("/installments/upcoming", requireAuth, async (req: Request, res: Response): Promise<void> => {
   const { userId } = req as AuthRequest;
+  await refreshOverdue(userId);
   const sevenDaysLater = new Date();
   sevenDaysLater.setDate(sevenDaysLater.getDate() + 7);
   const today = new Date().toISOString().slice(0, 10);
@@ -116,11 +133,15 @@ router.post("/installments/:id/payments", requireAuth, async (req: Request, res:
   const total = Number(existing[0].amount);
   const currentPaid = Number(existing[0].paidAmount);
   const newPaid = Math.min(total, currentPaid + parsed.data.amount);
-  const newStatus = newPaid >= total ? "paid" : existing[0].status === "paid" ? "pending" : existing[0].status;
+  const today = new Date().toISOString().slice(0, 10);
+  const fullyPaid = newPaid >= total;
+  // If fully paid → "paid"; otherwise any partial payment moves "paid"/"overdue" back to "pending".
+  const newStatus = fullyPaid ? "paid" : "pending";
+  const newPaidAt = fullyPaid ? (existing[0].paidAt ?? today) : null;
 
   const [updated] = await db
     .update(installmentsTable)
-    .set({ paidAmount: String(newPaid), status: newStatus })
+    .set({ paidAmount: String(newPaid), status: newStatus, paidAt: newPaidAt })
     .where(and(eq(installmentsTable.id, params.data.id), eq(installmentsTable.userId, userId)))
     .returning();
 
@@ -150,17 +171,22 @@ router.patch("/installments/:id", requireAuth, async (req: Request, res: Respons
   if (paidAmount !== undefined) updateData.paidAmount = String(paidAmount);
   if (dueDate !== undefined) updateData.dueDate = toDateStr(dueDate);
 
-  // If marking paid, set paidAmount to full amount for consistency
-  if (rest.status === "paid" && paidAmount === undefined) {
+  // If marking paid, set paidAmount to full amount and stamp paidAt
+  if (rest.status === "paid") {
     const existing = await db
       .select()
       .from(installmentsTable)
       .where(and(eq(installmentsTable.id, params.data.id), eq(installmentsTable.userId, userId)))
       .limit(1);
     if (existing[0]) {
-      const total = amount !== undefined ? Number(amount) : Number(existing[0].amount);
-      updateData.paidAmount = String(total);
+      if (paidAmount === undefined) {
+        const total = amount !== undefined ? Number(amount) : Number(existing[0].amount);
+        updateData.paidAmount = String(total);
+      }
+      updateData.paidAt = existing[0].paidAt ?? new Date().toISOString().slice(0, 10);
     }
+  } else if (rest.status === "pending" || rest.status === "overdue") {
+    updateData.paidAt = null;
   }
 
   const [installment] = await db

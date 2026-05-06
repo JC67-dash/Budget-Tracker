@@ -1111,6 +1111,10 @@ components:
         notes:
           type: string
           nullable: true
+        paidAt:
+          type: string
+          format: date
+          nullable: true
         createdAt:
           type: string
           format: date-time

@@ -268,6 +268,7 @@ export const ListInstallmentsResponse = zod.object({
       dueDate: zod.coerce.date(),
       status: zod.enum(["pending", "paid", "overdue"]),
       notes: zod.string().nullish(),
+      paidAt: zod.coerce.date().nullish(),
       createdAt: zod.coerce.date(),
     }),
   ),
@@ -312,6 +313,7 @@ export const GetUpcomingInstallmentsResponse = zod.object({
       dueDate: zod.coerce.date(),
       status: zod.enum(["pending", "paid", "overdue"]),
       notes: zod.string().nullish(),
+      paidAt: zod.coerce.date().nullish(),
       createdAt: zod.coerce.date(),
     }),
   ),
@@ -341,6 +343,7 @@ export const RecordInstallmentPaymentResponse = zod.object({
   dueDate: zod.coerce.date(),
   status: zod.enum(["pending", "paid", "overdue"]),
   notes: zod.string().nullish(),
+  paidAt: zod.coerce.date().nullish(),
   createdAt: zod.coerce.date(),
 });
 
@@ -381,6 +384,7 @@ export const UpdateInstallmentResponse = zod.object({
   dueDate: zod.coerce.date(),
   status: zod.enum(["pending", "paid", "overdue"]),
   notes: zod.string().nullish(),
+  paidAt: zod.coerce.date().nullish(),
   createdAt: zod.coerce.date(),
 });
 

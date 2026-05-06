@@ -168,6 +168,7 @@ export interface Installment {
   dueDate: string;
   status: InstallmentStatus;
   notes?: string | null;
+  paidAt?: string | null;
   createdAt: string;
 }
 

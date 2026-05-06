@@ -12,6 +12,7 @@ export const installmentsTable = pgTable("installments", {
   dueDate: date("due_date").notNull(),
   status: text("status").notNull().default("pending"),
   notes: text("notes"),
+  paidAt: date("paid_at"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

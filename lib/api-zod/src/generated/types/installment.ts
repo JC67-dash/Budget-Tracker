@@ -18,5 +18,6 @@ export interface Installment {
   dueDate: Date;
   status: InstallmentStatus;
   notes?: string | null;
+  paidAt?: Date | null;
   createdAt: Date;
 }

@@ -547,6 +547,12 @@ export default function Installments() {
                   {(hasPartial || inst.status === "paid") && (
                     <Progress value={pct} className="h-1.5" />
                   )}
+                  {inst.status === "paid" && inst.paidAt && (
+                    <div className="flex items-center gap-1.5 text-xs text-green-700 dark:text-green-400 pt-1">
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                      <span>Completed on {format(parseISO(inst.paidAt), "MMM d, yyyy")}</span>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             );
