@@ -186,7 +186,7 @@ export default function Accounts() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-foreground tracking-tight" data-testid="text-accounts-heading">
             Accounts
@@ -358,11 +358,11 @@ export default function Accounts() {
               <Card key={a.id} className="border-none shadow-sm group hover-elevate transition-all" data-testid={`card-account-${a.id}`}>
                 <CardContent className="p-5">
                   <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-center gap-3 min-w-0">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
                       <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
                         <Icon className="h-5 w-5" />
                       </div>
-                      <div className="min-w-0">
+                      <div className="min-w-0 flex-1">
                         <p className="font-semibold text-foreground truncate" data-testid={`text-account-name-${a.id}`}>
                           {a.name}
                         </p>
@@ -372,7 +372,7 @@ export default function Accounts() {
                       </div>
                     </div>
                     <div className="text-right shrink-0">
-                      <p className="text-xl font-bold text-foreground" data-testid={`text-account-balance-${a.id}`}>
+                      <p className="text-lg sm:text-xl font-bold text-foreground whitespace-nowrap" data-testid={`text-account-balance-${a.id}`}>
                         ₱{Number(a.balance).toLocaleString("en-PH", { minimumFractionDigits: 2 })}
                       </p>
                       <p className="text-xs text-muted-foreground">{share.toFixed(0)}% of total</p>

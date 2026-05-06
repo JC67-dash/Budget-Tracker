@@ -155,7 +155,7 @@ export default function Goals() {
                     </FormItem>
                   )}
                 />
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <FormField
                     control={addForm.control}
                     name="targetAmount"
@@ -250,12 +250,12 @@ export default function Goals() {
             return (
               <Card key={goal.id} className="border-none shadow-sm group" data-testid={`card-goal-${goal.id}`}>
                 <CardHeader className="pb-2">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="font-semibold text-foreground text-lg leading-tight">{goal.name}</h3>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-semibold text-foreground text-lg leading-tight break-words">{goal.name}</h3>
                       <Badge variant="secondary" className="mt-1 capitalize">{goal.period}</Badge>
                     </div>
-                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex gap-1 shrink-0 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                       <Button
                         variant="ghost"
                         size="icon"

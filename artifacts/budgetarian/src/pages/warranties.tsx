@@ -157,7 +157,7 @@ export default function Warranties() {
                     </FormItem>
                   )}
                 />
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
                     name="purchaseDate"
@@ -268,20 +268,20 @@ export default function Warranties() {
                 data-testid={`card-warranty-${w.id}`}
               >
                 <CardContent className="p-5">
-                  <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-start justify-between gap-2 mb-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <ShieldCheck className={`h-4 w-4 shrink-0 ${isExpired ? "text-rose-500" : isExpiringSoon ? "text-amber-500" : "text-teal-600"}`} />
                         <h3 className="font-semibold text-foreground truncate">{w.productName}</h3>
                       </div>
-                      {w.store && <p className="text-xs text-muted-foreground mt-0.5">{w.store}</p>}
+                      {w.store && <p className="text-xs text-muted-foreground mt-0.5 truncate">{w.store}</p>}
                     </div>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-7 w-7 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                          className="h-7 w-7 text-muted-foreground hover:text-destructive opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity shrink-0"
                           data-testid={`button-delete-warranty-${w.id}`}
                         >
                           <Trash2 className="h-3.5 w-3.5" />

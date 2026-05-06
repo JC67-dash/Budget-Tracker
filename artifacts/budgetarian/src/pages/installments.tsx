@@ -209,7 +209,7 @@ export default function Installments() {
                     </FormItem>
                   )}
                 />
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
                     name="amount"
@@ -369,70 +369,70 @@ export default function Installments() {
                 data-testid={`card-installment-${inst.id}`}
               >
                 <CardContent className="p-4 space-y-3">
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-4 flex-1 min-w-0">
-                      <div className={`h-10 w-10 rounded-full ${isUrgent ? "bg-amber-100 dark:bg-amber-900/30" : "bg-muted"} flex items-center justify-center shrink-0`}>
-                        <Icon className={`h-5 w-5 ${cfg.color}`} />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="font-medium text-foreground truncate">{inst.name}</p>
-                        <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                          <span className="text-xs text-muted-foreground">Due {format(parseISO(inst.dueDate), "MMM d, yyyy")}</span>
-                          {isUrgent && (
-                            <Badge variant="outline" className="text-xs border-amber-300 text-amber-700 dark:text-amber-400">
-                              {daysLeft === 0 ? "Due Today" : `${daysLeft}d left`}
-                            </Badge>
-                          )}
-                          <Badge
-                            variant="secondary"
-                            className={`text-xs capitalize ${inst.status === "paid" ? "text-teal-700 bg-teal-50 dark:bg-teal-950/30" : inst.status === "overdue" ? "text-rose-700 bg-rose-50 dark:bg-rose-950/30" : ""}`}
-                            data-testid={`status-installment-${inst.id}`}
-                          >
-                            {inst.status}
-                          </Badge>
+                  <div className="flex items-start gap-3">
+                    <div className={`h-10 w-10 rounded-full ${isUrgent ? "bg-amber-100 dark:bg-amber-900/30" : "bg-muted"} flex items-center justify-center shrink-0`}>
+                      <Icon className={`h-5 w-5 ${cfg.color}`} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-3">
+                        <p className="font-medium text-foreground break-words min-w-0 flex-1">{inst.name}</p>
+                        <div className="text-right shrink-0">
+                          <div className="font-semibold text-foreground whitespace-nowrap">₱{remaining.toFixed(2)}</div>
+                          <div className="text-[11px] text-muted-foreground whitespace-nowrap">
+                            of ₱{total.toFixed(2)}
+                          </div>
                         </div>
+                      </div>
+                      <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                        <span className="text-xs text-muted-foreground whitespace-nowrap">Due {format(parseISO(inst.dueDate), "MMM d, yyyy")}</span>
+                        {isUrgent && (
+                          <Badge variant="outline" className="text-xs border-amber-300 text-amber-700 dark:text-amber-400">
+                            {daysLeft === 0 ? "Due Today" : `${daysLeft}d left`}
+                          </Badge>
+                        )}
+                        <Badge
+                          variant="secondary"
+                          className={`text-xs capitalize ${inst.status === "paid" ? "text-teal-700 bg-teal-50 dark:bg-teal-950/30" : inst.status === "overdue" ? "text-rose-700 bg-rose-50 dark:bg-rose-950/30" : ""}`}
+                          data-testid={`status-installment-${inst.id}`}
+                        >
+                          {inst.status}
+                        </Badge>
                       </div>
                     </div>
-
-                    <div className="flex items-center gap-3 shrink-0">
-                      <div className="text-right">
-                        <div className="font-semibold text-foreground">₱{remaining.toFixed(2)}</div>
-                        <div className="text-[11px] text-muted-foreground">
-                          of ₱{total.toFixed(2)} total
-                        </div>
-                      </div>
-                      {inst.status !== "paid" && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="text-xs h-8 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
-                          onClick={() => {
-                            setPayingId(inst.id);
-                            const m = inst.monthlyAmount;
-                            setPayAmount(m != null && m > 0 ? Math.min(Number(m), remaining).toFixed(2) : "");
-                          }}
-                          data-testid={`button-pay-${inst.id}`}
-                        >
-                          <Wallet className="h-3.5 w-3.5 mr-1" /> Pay
-                        </Button>
-                      )}
-                      {inst.status === "pending" && remaining === total && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-xs h-8 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
-                          onClick={() => markAsPaid(inst.id)}
-                          data-testid={`button-mark-paid-${inst.id}`}
-                        >
-                          <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Mark Paid
-                        </Button>
-                      )}
-                      <AlertDialog>
+                  </div>
+                  <div className="flex items-center justify-end gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                    {inst.status !== "paid" && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-xs h-8"
+                        onClick={() => {
+                          setPayingId(inst.id);
+                          const m = inst.monthlyAmount;
+                          setPayAmount(m != null && m > 0 ? Math.min(Number(m), remaining).toFixed(2) : "");
+                        }}
+                        data-testid={`button-pay-${inst.id}`}
+                      >
+                        <Wallet className="h-3.5 w-3.5 mr-1" /> Pay
+                      </Button>
+                    )}
+                    {inst.status === "pending" && remaining === total && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-xs h-8"
+                        onClick={() => markAsPaid(inst.id)}
+                        data-testid={`button-mark-paid-${inst.id}`}
+                      >
+                        <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Mark Paid
+                      </Button>
+                    )}
+                    <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="h-8 w-8 text-muted-foreground hover:text-destructive"
                           data-testid={`button-delete-installment-${inst.id}`}
                         >
                           <Trash2 className="h-4 w-4" />
@@ -457,7 +457,6 @@ export default function Installments() {
                         </AlertDialogFooter>
                       </AlertDialogContent>
                     </AlertDialog>
-                    </div>
                   </div>
                   {inst.monthlyAmount != null && Number(inst.monthlyAmount) > 0 && (() => {
                     const monthly = Number(inst.monthlyAmount);
