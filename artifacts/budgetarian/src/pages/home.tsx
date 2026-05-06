@@ -9,7 +9,7 @@ export default function Home() {
       <header className="py-6 px-4 sm:px-8 flex items-center justify-between border-b border-border/50 max-w-6xl mx-auto w-full">
         <div className="flex items-center gap-2">
           <img src={logoUrl} alt="Budgetarian" className="h-10 w-10 object-contain" />
-          <span className="font-extrabold text-2xl tracking-tight text-green-600 dark:text-green-400">Budgetarian</span>
+          <span className="font-extrabold text-2xl tracking-tight text-[#113320] dark:text-green-300">Budgetarian</span>
         </div>
         <div className="flex items-center gap-4">
           <Link href="/sign-in" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors" data-testid="link-signin">
