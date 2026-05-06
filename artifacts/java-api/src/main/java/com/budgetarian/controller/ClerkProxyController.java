@@ -10,14 +10,44 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.Base64;
 import java.util.Enumeration;
 import java.util.Optional;
 
 @RestController
 public class ClerkProxyController {
 
-    private static final String CLERK_FAPI = "https://frontend-api.clerk.dev";
+    private static final String DEFAULT_CLERK_FAPI = "https://frontend-api.clerk.dev";
     private static final HttpClient httpClient = HttpClient.newBuilder().build();
+
+    private static String resolveClerkFapi() {
+        String pk = System.getenv("CLERK_PUBLISHABLE_KEY");
+        if (pk == null || pk.isBlank()) {
+            return DEFAULT_CLERK_FAPI;
+        }
+        int underscore = pk.indexOf('_', 3);
+        if (underscore < 0) {
+            return DEFAULT_CLERK_FAPI;
+        }
+        String encoded = pk.substring(underscore + 1);
+        try {
+            String padded = encoded;
+            int rem = padded.length() % 4;
+            if (rem != 0) {
+                padded = padded + "====".substring(rem);
+            }
+            String decoded = new String(Base64.getUrlDecoder().decode(padded));
+            String host = decoded.endsWith("$") ? decoded.substring(0, decoded.length() - 1) : decoded;
+            if (host.isBlank()) {
+                return DEFAULT_CLERK_FAPI;
+            }
+            return "https://" + host;
+        } catch (IllegalArgumentException e) {
+            return DEFAULT_CLERK_FAPI;
+        }
+    }
+
+    private static final String CLERK_FAPI = resolveClerkFapi();
 
     @RequestMapping("/__clerk/**")
     public ResponseEntity<byte[]> proxy(HttpServletRequest request) throws Exception {
