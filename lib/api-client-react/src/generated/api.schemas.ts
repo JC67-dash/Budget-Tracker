@@ -162,6 +162,8 @@ export interface Installment {
   userId: string;
   name: string;
   amount: number;
+  paidAmount: number;
+  remainingAmount: number;
   dueDate: string;
   status: InstallmentStatus;
   notes?: string | null;
@@ -186,6 +188,8 @@ export interface CreateInstallmentBody {
   name: string;
   /** @minimum 0.01 */
   amount: number;
+  /** @minimum 0 */
+  paidAmount?: number;
   dueDate: string;
   status?: CreateInstallmentBodyStatus;
   notes?: string;
@@ -201,12 +205,20 @@ export const UpdateInstallmentBodyStatus = {
 } as const;
 
 export interface UpdateInstallmentBody {
+  /** @minLength 1 */
   name?: string;
   /** @minimum 0.01 */
   amount?: number;
+  /** @minimum 0 */
+  paidAmount?: number;
   dueDate?: string;
   status?: UpdateInstallmentBodyStatus;
   notes?: string;
+}
+
+export interface RecordPaymentBody {
+  /** @minimum 0.01 */
+  amount: number;
 }
 
 export interface Warranty {

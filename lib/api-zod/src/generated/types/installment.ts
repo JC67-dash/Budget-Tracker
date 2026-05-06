@@ -12,6 +12,8 @@ export interface Installment {
   userId: string;
   name: string;
   amount: number;
+  paidAmount: number;
+  remainingAmount: number;
   dueDate: Date;
   status: InstallmentStatus;
   notes?: string | null;

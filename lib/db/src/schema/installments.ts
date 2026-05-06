@@ -7,6 +7,7 @@ export const installmentsTable = pgTable("installments", {
   userId: text("user_id").notNull(),
   name: text("name").notNull(),
   amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
+  paidAmount: numeric("paid_amount", { precision: 12, scale: 2 }).notNull().default("0"),
   dueDate: date("due_date").notNull(),
   status: text("status").notNull().default("pending"),
   notes: text("notes"),

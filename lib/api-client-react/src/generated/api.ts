@@ -40,6 +40,7 @@ import type {
   ListInstallmentsResponse,
   ListTipsResponse,
   ListWarrantiesResponse,
+  RecordPaymentBody,
   UpdateAccountBody,
   UpdateDebtBody,
   UpdateExpenseBody,
@@ -1288,6 +1289,93 @@ export function useGetUpcomingInstallments<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * @summary Record a partial (or full) payment toward an installment
+ */
+export const getRecordInstallmentPaymentUrl = (id: number) => {
+  return `/api/installments/${id}/payments`;
+};
+
+export const recordInstallmentPayment = async (
+  id: number,
+  recordPaymentBody: RecordPaymentBody,
+  options?: RequestInit,
+): Promise<Installment> => {
+  return customFetch<Installment>(getRecordInstallmentPaymentUrl(id), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(recordPaymentBody),
+  });
+};
+
+export const getRecordInstallmentPaymentMutationOptions = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof recordInstallmentPayment>>,
+    TError,
+    { id: number; data: BodyType<RecordPaymentBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof recordInstallmentPayment>>,
+  TError,
+  { id: number; data: BodyType<RecordPaymentBody> },
+  TContext
+> => {
+  const mutationKey = ["recordInstallmentPayment"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof recordInstallmentPayment>>,
+    { id: number; data: BodyType<RecordPaymentBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return recordInstallmentPayment(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type RecordInstallmentPaymentMutationResult = NonNullable<
+  Awaited<ReturnType<typeof recordInstallmentPayment>>
+>;
+export type RecordInstallmentPaymentMutationBody = BodyType<RecordPaymentBody>;
+export type RecordInstallmentPaymentMutationError = ErrorType<ErrorEnvelope>;
+
+/**
+ * @summary Record a partial (or full) payment toward an installment
+ */
+export const useRecordInstallmentPayment = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof recordInstallmentPayment>>,
+    TError,
+    { id: number; data: BodyType<RecordPaymentBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof recordInstallmentPayment>>,
+  TError,
+  { id: number; data: BodyType<RecordPaymentBody> },
+  TContext
+> => {
+  return useMutation(getRecordInstallmentPaymentMutationOptions(options));
+};
 
 /**
  * @summary Update an installment entry

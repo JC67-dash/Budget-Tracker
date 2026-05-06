@@ -39,6 +39,7 @@ export * from "./listGoalsResponse";
 export * from "./listInstallmentsResponse";
 export * from "./listTipsResponse";
 export * from "./listWarrantiesResponse";
+export * from "./recordPaymentBody";
 export * from "./tip";
 export * from "./tipCategory";
 export * from "./updateAccountBody";

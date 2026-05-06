@@ -262,6 +262,8 @@ export const ListInstallmentsResponse = zod.object({
       userId: zod.string(),
       name: zod.string(),
       amount: zod.number(),
+      paidAmount: zod.number(),
+      remainingAmount: zod.number(),
       dueDate: zod.coerce.date(),
       status: zod.enum(["pending", "paid", "overdue"]),
       notes: zod.string().nullish(),
@@ -276,9 +278,12 @@ export const ListInstallmentsResponse = zod.object({
 
 export const createInstallmentBodyAmountMin = 0.01;
 
+export const createInstallmentBodyPaidAmountMin = 0;
+
 export const CreateInstallmentBody = zod.object({
   name: zod.string().min(1),
   amount: zod.number().min(createInstallmentBodyAmountMin),
+  paidAmount: zod.number().min(createInstallmentBodyPaidAmountMin).optional(),
   dueDate: zod.coerce.date(),
   status: zod.enum(["pending", "paid", "overdue"]).optional(),
   notes: zod.string().optional(),
@@ -294,12 +299,40 @@ export const GetUpcomingInstallmentsResponse = zod.object({
       userId: zod.string(),
       name: zod.string(),
       amount: zod.number(),
+      paidAmount: zod.number(),
+      remainingAmount: zod.number(),
       dueDate: zod.coerce.date(),
       status: zod.enum(["pending", "paid", "overdue"]),
       notes: zod.string().nullish(),
       createdAt: zod.coerce.date(),
     }),
   ),
+});
+
+/**
+ * @summary Record a partial (or full) payment toward an installment
+ */
+export const RecordInstallmentPaymentParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const recordInstallmentPaymentBodyAmountMin = 0.01;
+
+export const RecordInstallmentPaymentBody = zod.object({
+  amount: zod.number().min(recordInstallmentPaymentBodyAmountMin),
+});
+
+export const RecordInstallmentPaymentResponse = zod.object({
+  id: zod.number(),
+  userId: zod.string(),
+  name: zod.string(),
+  amount: zod.number(),
+  paidAmount: zod.number(),
+  remainingAmount: zod.number(),
+  dueDate: zod.coerce.date(),
+  status: zod.enum(["pending", "paid", "overdue"]),
+  notes: zod.string().nullish(),
+  createdAt: zod.coerce.date(),
 });
 
 /**
@@ -311,9 +344,12 @@ export const UpdateInstallmentParams = zod.object({
 
 export const updateInstallmentBodyAmountMin = 0.01;
 
+export const updateInstallmentBodyPaidAmountMin = 0;
+
 export const UpdateInstallmentBody = zod.object({
-  name: zod.string().optional(),
+  name: zod.string().min(1).optional(),
   amount: zod.number().min(updateInstallmentBodyAmountMin).optional(),
+  paidAmount: zod.number().min(updateInstallmentBodyPaidAmountMin).optional(),
   dueDate: zod.coerce.date().optional(),
   status: zod.enum(["pending", "paid", "overdue"]).optional(),
   notes: zod.string().optional(),
@@ -324,6 +360,8 @@ export const UpdateInstallmentResponse = zod.object({
   userId: zod.string(),
   name: zod.string(),
   amount: zod.number(),
+  paidAmount: zod.number(),
+  remainingAmount: zod.number(),
   dueDate: zod.coerce.date(),
   status: zod.enum(["pending", "paid", "overdue"]),
   notes: zod.string().nullish(),

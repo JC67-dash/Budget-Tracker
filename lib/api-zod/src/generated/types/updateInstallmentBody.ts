@@ -8,9 +8,12 @@
 import type { UpdateInstallmentBodyStatus } from "./updateInstallmentBodyStatus";
 
 export interface UpdateInstallmentBody {
+  /** @minLength 1 */
   name?: string;
   /** @minimum 0.01 */
   amount?: number;
+  /** @minimum 0 */
+  paidAmount?: number;
   dueDate?: Date;
   status?: UpdateInstallmentBodyStatus;
   notes?: string;

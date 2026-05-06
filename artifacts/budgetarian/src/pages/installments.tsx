@@ -5,11 +5,13 @@ import {
   useCreateInstallment,
   useUpdateInstallment,
   useDeleteInstallment,
+  useRecordInstallmentPayment,
   getGetUpcomingInstallmentsQueryKey,
   getGetDashboardSummaryQueryKey,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2, CalendarClock, CheckCircle2, AlertTriangle, Clock } from "lucide-react";
+import { Plus, Trash2, CalendarClock, CheckCircle2, AlertTriangle, Clock, Wallet } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -52,6 +54,8 @@ const statusConfig = {
 
 export default function Installments() {
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [payingId, setPayingId] = useState<number | null>(null);
+  const [payAmount, setPayAmount] = useState<string>("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -86,6 +90,22 @@ export default function Installments() {
     },
   });
 
+  const recordPayment = useRecordInstallmentPayment({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: getListInstallmentsQueryKey() });
+        queryClient.invalidateQueries({ queryKey: getGetUpcomingInstallmentsQueryKey() });
+        queryClient.invalidateQueries({ queryKey: getGetDashboardSummaryQueryKey() });
+        setPayingId(null);
+        setPayAmount("");
+        toast({ title: "Payment recorded" });
+      },
+      onError: (err: Error) => {
+        toast({ title: "Failed to record payment", description: err.message, variant: "destructive" });
+      },
+    },
+  });
+
   const deleteInstallment = useDeleteInstallment({
     mutation: {
       onSuccess: () => {
@@ -114,6 +134,16 @@ export default function Installments() {
 
   const markAsPaid = (id: number) => {
     updateInstallment.mutate({ id, data: { status: "paid" } });
+  };
+
+  const submitPayment = () => {
+    if (payingId === null) return;
+    const amt = Number(payAmount);
+    if (!Number.isFinite(amt) || amt <= 0) {
+      toast({ title: "Enter a valid amount", variant: "destructive" });
+      return;
+    }
+    recordPayment.mutate({ id: payingId, data: { amount: amt } });
   };
 
   const installments = installmentsData?.installments ?? [];
@@ -248,6 +278,11 @@ export default function Installments() {
             const isUrgent = inst.status === "pending" && daysLeft >= 0 && daysLeft <= 7;
             const cfg = statusConfig[inst.status as keyof typeof statusConfig] || statusConfig.pending;
             const Icon = cfg.icon;
+            const total = Number(inst.amount);
+            const paid = Number(inst.paidAmount ?? 0);
+            const remaining = Math.max(0, total - paid);
+            const pct = total > 0 ? Math.min(100, (paid / total) * 100) : 0;
+            const hasPartial = paid > 0 && paid < total;
 
             return (
               <Card
@@ -255,45 +290,64 @@ export default function Installments() {
                 className={`border shadow-sm group transition-all ${isUrgent ? cfg.bg : "border-border"}`}
                 data-testid={`card-installment-${inst.id}`}
               >
-                <CardContent className="p-4 flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-4 flex-1 min-w-0">
-                    <div className={`h-10 w-10 rounded-full ${isUrgent ? "bg-amber-100 dark:bg-amber-900/30" : "bg-muted"} flex items-center justify-center shrink-0`}>
-                      <Icon className={`h-5 w-5 ${cfg.color}`} />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="font-medium text-foreground truncate">{inst.name}</p>
-                      <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                        <span className="text-xs text-muted-foreground">Due {format(parseISO(inst.dueDate), "MMM d, yyyy")}</span>
-                        {isUrgent && (
-                          <Badge variant="outline" className="text-xs border-amber-300 text-amber-700 dark:text-amber-400">
-                            {daysLeft === 0 ? "Due Today" : `${daysLeft}d left`}
+                <CardContent className="p-4 space-y-3">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-4 flex-1 min-w-0">
+                      <div className={`h-10 w-10 rounded-full ${isUrgent ? "bg-amber-100 dark:bg-amber-900/30" : "bg-muted"} flex items-center justify-center shrink-0`}>
+                        <Icon className={`h-5 w-5 ${cfg.color}`} />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-medium text-foreground truncate">{inst.name}</p>
+                        <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                          <span className="text-xs text-muted-foreground">Due {format(parseISO(inst.dueDate), "MMM d, yyyy")}</span>
+                          {isUrgent && (
+                            <Badge variant="outline" className="text-xs border-amber-300 text-amber-700 dark:text-amber-400">
+                              {daysLeft === 0 ? "Due Today" : `${daysLeft}d left`}
+                            </Badge>
+                          )}
+                          <Badge
+                            variant="secondary"
+                            className={`text-xs capitalize ${inst.status === "paid" ? "text-teal-700 bg-teal-50 dark:bg-teal-950/30" : inst.status === "overdue" ? "text-rose-700 bg-rose-50 dark:bg-rose-950/30" : ""}`}
+                            data-testid={`status-installment-${inst.id}`}
+                          >
+                            {inst.status}
                           </Badge>
-                        )}
-                        <Badge
-                          variant="secondary"
-                          className={`text-xs capitalize ${inst.status === "paid" ? "text-teal-700 bg-teal-50 dark:bg-teal-950/30" : inst.status === "overdue" ? "text-rose-700 bg-rose-50 dark:bg-rose-950/30" : ""}`}
-                          data-testid={`status-installment-${inst.id}`}
-                        >
-                          {inst.status}
-                        </Badge>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="flex items-center gap-3 shrink-0">
-                    <span className="font-semibold text-foreground">₱{Number(inst.amount).toFixed(2)}</span>
-                    {inst.status === "pending" && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-xs h-8 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => markAsPaid(inst.id)}
-                        data-testid={`button-mark-paid-${inst.id}`}
-                      >
-                        <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Mark Paid
-                      </Button>
-                    )}
-                    <AlertDialog>
+                    <div className="flex items-center gap-3 shrink-0">
+                      <div className="text-right">
+                        <div className="font-semibold text-foreground">₱{remaining.toFixed(2)}</div>
+                        {hasPartial && (
+                          <div className="text-[11px] text-muted-foreground">
+                            of ₱{total.toFixed(2)}
+                          </div>
+                        )}
+                      </div>
+                      {inst.status !== "paid" && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-xs h-8 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
+                          onClick={() => { setPayingId(inst.id); setPayAmount(""); }}
+                          data-testid={`button-pay-${inst.id}`}
+                        >
+                          <Wallet className="h-3.5 w-3.5 mr-1" /> Pay
+                        </Button>
+                      )}
+                      {inst.status === "pending" && remaining === total && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs h-8 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
+                          onClick={() => markAsPaid(inst.id)}
+                          data-testid={`button-mark-paid-${inst.id}`}
+                        >
+                          <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Mark Paid
+                        </Button>
+                      )}
+                      <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button
                           variant="ghost"
@@ -323,13 +377,81 @@ export default function Installments() {
                         </AlertDialogFooter>
                       </AlertDialogContent>
                     </AlertDialog>
+                    </div>
                   </div>
+                  {(hasPartial || inst.status === "paid") && (
+                    <div className="space-y-1">
+                      <Progress value={pct} className="h-1.5" />
+                      <div className="flex justify-between text-[11px] text-muted-foreground">
+                        <span>Paid ₱{paid.toFixed(2)} of ₱{total.toFixed(2)}</span>
+                        <span>{pct.toFixed(0)}%</span>
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             );
           })}
         </div>
       )}
+
+      <Dialog open={payingId !== null} onOpenChange={(o) => { if (!o) { setPayingId(null); setPayAmount(""); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Record a payment</DialogTitle>
+          </DialogHeader>
+          {(() => {
+            const inst = installments.find((i) => i.id === payingId);
+            if (!inst) return null;
+            const total = Number(inst.amount);
+            const paid = Number(inst.paidAmount ?? 0);
+            const remaining = Math.max(0, total - paid);
+            return (
+              <div className="space-y-4">
+                <div className="rounded-lg bg-muted p-3 text-sm">
+                  <div className="font-medium text-foreground">{inst.name}</div>
+                  <div className="text-muted-foreground mt-1">
+                    Paid ₱{paid.toFixed(2)} of ₱{total.toFixed(2)} · Remaining{" "}
+                    <span className="font-semibold text-foreground">₱{remaining.toFixed(2)}</span>
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium">Amount paid this time (₱)</label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min="0.01"
+                    autoFocus
+                    value={payAmount}
+                    onChange={(e) => setPayAmount(e.target.value)}
+                    placeholder={remaining.toFixed(2)}
+                    data-testid="input-payment-amount"
+                  />
+                  <div className="flex gap-2 pt-1">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="text-xs"
+                      onClick={() => setPayAmount(remaining.toFixed(2))}
+                    >
+                      Pay full remaining
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setPayingId(null); setPayAmount(""); }}>
+              Cancel
+            </Button>
+            <Button onClick={submitPayment} disabled={recordPayment.isPending} data-testid="button-submit-payment">
+              Record payment
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
