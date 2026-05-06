@@ -22,56 +22,29 @@
 import { createProxyMiddleware } from "http-proxy-middleware";
 import type { RequestHandler } from "express";
 
-const DEFAULT_CLERK_FAPI = "https://frontend-api.clerk.dev";
+const CLERK_FAPI = "https://frontend-api.clerk.dev";
 export const CLERK_PROXY_PATH = "/api/__clerk";
 
-function resolveClerkFapi(): string {
-  const pk =
-    process.env.CLERK_PUBLISHABLE_KEY ||
-    process.env.VITE_CLERK_PUBLISHABLE_KEY;
-  if (!pk) return DEFAULT_CLERK_FAPI;
-  const underscore = pk.indexOf("_", 3);
-  if (underscore < 0) return DEFAULT_CLERK_FAPI;
-  const encoded = pk.substring(underscore + 1);
-  try {
-    const padded =
-      encoded + "=".repeat((4 - (encoded.length % 4)) % 4);
-    const decoded = Buffer.from(padded, "base64").toString("utf-8");
-    const host = decoded.endsWith("$")
-      ? decoded.substring(0, decoded.length - 1)
-      : decoded;
-    if (!host.trim()) return DEFAULT_CLERK_FAPI;
-    return "https://" + host.trim();
-  } catch {
-    return DEFAULT_CLERK_FAPI;
-  }
-}
-
 export function clerkProxyMiddleware(): RequestHandler {
+  // Only run proxy in production — Clerk proxying doesn't work for dev instances
+  if (process.env.NODE_ENV !== "production") {
+    return (_req, _res, next) => next();
+  }
+
   const secretKey = process.env.CLERK_SECRET_KEY;
   if (!secretKey) {
     return (_req, _res, next) => next();
   }
 
-  const target = resolveClerkFapi();
-  // Startup marker — confirms which dist is running in autoscale.
-  console.log(`[clerk-proxy] upstream=${target} mount=${CLERK_PROXY_PATH} forwardHost=true`);
-
   return createProxyMiddleware({
-    target,
+    target: CLERK_FAPI,
     changeOrigin: true,
     pathRewrite: (path: string) =>
       path.replace(new RegExp(`^${CLERK_PROXY_PATH}`), ""),
     on: {
       proxyReq: (proxyReq, req) => {
-        const xfProto = req.headers["x-forwarded-proto"];
-        const protocol =
-          (Array.isArray(xfProto) ? xfProto[0] : xfProto)?.split(",")[0]?.trim() ||
-          "https";
-        const xfHost = req.headers["x-forwarded-host"];
-        const forwardedHost =
-          (Array.isArray(xfHost) ? xfHost[0] : xfHost)?.split(",")[0]?.trim() || "";
-        const host = forwardedHost || req.headers.host || "";
+        const protocol = req.headers["x-forwarded-proto"] || "https";
+        const host = req.headers.host || "";
         const proxyUrl = `${protocol}://${host}${CLERK_PROXY_PATH}`;
 
         proxyReq.setHeader("Clerk-Proxy-Url", proxyUrl);

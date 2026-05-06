@@ -1,5 +1,5 @@
 import { useEffect, useRef, type ComponentType } from "react";
-import { ClerkProvider, SignIn, SignUp, Show, useClerk, useAuth } from '@clerk/react';
+import { ClerkProvider, SignIn, SignUp, Show, useClerk } from '@clerk/react';
 import { Switch, Route, useLocation, Router as WouterRouter, Redirect } from 'wouter';
 import { QueryClientProvider, useQueryClient } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
@@ -16,17 +16,8 @@ import Installments from "./pages/installments";
 import Warranties from "./pages/warranties";
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
-
-function resolveClerkProxyUrl(): string | undefined {
-  if (import.meta.env.VITE_CLERK_PROXY_URL) return import.meta.env.VITE_CLERK_PROXY_URL;
-  if (typeof window !== "undefined" && !window.location.hostname.includes("localhost")) {
-    return `${window.location.origin}/api/__clerk`;
-  }
-  return undefined;
-}
-
-const clerkProxyUrl = resolveClerkProxyUrl();
 
 function stripBase(path: string): string {
   return basePath && path.startsWith(basePath) ? path.slice(basePath.length) || "/" : path;
@@ -93,38 +84,6 @@ function ClerkQueryClientCacheInvalidator() {
   return null;
 }
 
-function AppRoutes() {
-  const { isLoaded } = useAuth();
-
-  if (!isLoaded) {
-    return (
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh" }}>
-        <div style={{ width: 40, height: 40, border: "3px solid #e5e7eb", borderTopColor: "#10b981", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
-        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-      </div>
-    );
-  }
-
-  return (
-    <Switch>
-      <Route path="/" component={HomeRedirect} />
-      <Route path="/sign-in/*?" component={SignInPage} />
-      <Route path="/sign-up/*?" component={SignUpPage} />
-
-      <Route path="/dashboard"><ProtectedRoute component={Dashboard} /></Route>
-      <Route path="/expenses"><ProtectedRoute component={Expenses} /></Route>
-      <Route path="/goals"><ProtectedRoute component={Goals} /></Route>
-      <Route path="/installments"><ProtectedRoute component={Installments} /></Route>
-      <Route path="/warranties"><ProtectedRoute component={Warranties} /></Route>
-      <Route path="/tips"><ProtectedRoute component={Tips} /></Route>
-
-      <Route>
-        <div className="p-8 text-center">404 Not Found</div>
-      </Route>
-    </Switch>
-  );
-}
-
 function ClerkProviderWithRoutes() {
   const [, setLocation] = useLocation();
   return (
@@ -137,7 +96,22 @@ function ClerkProviderWithRoutes() {
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <ClerkQueryClientCacheInvalidator />
-          <AppRoutes />
+          <Switch>
+            <Route path="/" component={HomeRedirect} />
+            <Route path="/sign-in/*?" component={SignInPage} />
+            <Route path="/sign-up/*?" component={SignUpPage} />
+            
+            <Route path="/dashboard"><ProtectedRoute component={Dashboard} /></Route>
+            <Route path="/expenses"><ProtectedRoute component={Expenses} /></Route>
+            <Route path="/goals"><ProtectedRoute component={Goals} /></Route>
+            <Route path="/installments"><ProtectedRoute component={Installments} /></Route>
+            <Route path="/warranties"><ProtectedRoute component={Warranties} /></Route>
+            <Route path="/tips"><ProtectedRoute component={Tips} /></Route>
+
+            <Route>
+              <div className="p-8 text-center">404 Not Found</div>
+            </Route>
+          </Switch>
           <Toaster />
         </TooltipProvider>
       </QueryClientProvider>

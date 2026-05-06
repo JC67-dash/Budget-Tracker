@@ -69,24 +69,6 @@ public class ClerkAuthInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response,
                              Object handler) throws Exception {
-        String requestUri = request.getRequestURI();
-        if (requestUri != null) {
-            String path = requestUri;
-            int q = path.indexOf('?');
-            if (q >= 0) {
-                path = path.substring(0, q);
-            }
-            if (path.startsWith("/api/__clerk/") || path.equals("/api/__clerk")
-                    || path.startsWith("/__clerk/") || path.equals("/__clerk")
-                    || path.startsWith("/api/storage/public-objects/")
-                    || path.startsWith("/storage/public-objects/")
-                    || path.equals("/api/health") || path.equals("/health")
-                    || path.equals("/api/healthz") || path.equals("/healthz")
-                    || path.equals("/api/tips") || path.equals("/tips")) {
-                return true;
-            }
-        }
-
         String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             sendUnauthorized(response, "Unauthorized");
