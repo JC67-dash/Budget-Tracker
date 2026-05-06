@@ -8,7 +8,7 @@ export default function Home() {
     <div className="min-h-screen bg-background flex flex-col">
       <header className="py-6 px-4 sm:px-8 flex items-center justify-between border-b border-border/50 max-w-6xl mx-auto w-full">
         <div className="flex items-center gap-2">
-          <img src={logoUrl} alt="Budgetarian" className="h-10 w-10 object-contain" />
+          <img src={logoUrl} alt="Budgetarian" className="h-14 w-14 object-contain" />
           <span className="font-extrabold text-2xl tracking-tight text-primary dark:text-primary">Budgetarian</span>
         </div>
         <div className="flex items-center gap-4">

@@ -71,7 +71,7 @@ export default function Layout({ children }: LayoutProps) {
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex w-64 flex-col border-r border-border bg-sidebar shrink-0 h-screen sticky top-0">
         <div className="p-6 flex items-center gap-2">
-          <img src={logoUrl} alt="Budgetarian" className="h-9 w-9 object-contain" />
+          <img src={logoUrl} alt="Budgetarian" className="h-12 w-12 object-contain" />
           <span className="font-extrabold text-xl tracking-tight text-primary dark:text-primary">
             Budgetarian
           </span>
@@ -112,7 +112,7 @@ export default function Layout({ children }: LayoutProps) {
       <div className="flex-1 flex flex-col min-w-0">
         <header className="md:hidden flex items-center justify-between p-4 border-b border-border bg-background sticky top-0 z-10">
           <div className="flex items-center gap-2">
-            <img src={logoUrl} alt="Budgetarian" className="h-8 w-8 object-contain" />
+            <img src={logoUrl} alt="Budgetarian" className="h-11 w-11 object-contain" />
             <span className="font-extrabold text-lg tracking-tight text-primary dark:text-primary">
               Budgetarian
             </span>
@@ -126,7 +126,7 @@ export default function Layout({ children }: LayoutProps) {
             </SheetTrigger>
             <SheetContent side="left" className="w-64 p-0 flex flex-col bg-sidebar">
               <div className="p-6 flex items-center gap-2">
-                <img src={logoUrl} alt="Budgetarian" className="h-9 w-9 object-contain" />
+                <img src={logoUrl} alt="Budgetarian" className="h-12 w-12 object-contain" />
                 <span className="font-extrabold text-xl tracking-tight text-primary dark:text-primary">
                   Budgetarian
                 </span>
