@@ -13,6 +13,7 @@ import {
 } from "@workspace/api-client-react";
 import {
   TrendingDown,
+  TrendingUp,
   Target,
   CalendarClock,
   ShieldCheck,
@@ -98,14 +99,34 @@ export default function Dashboard() {
     );
   }
 
+  const incomeMonth = summary?.totalIncomeThisMonth ?? 0;
+  const expensesMonth = summary?.totalExpensesThisMonth ?? 0;
+  const netMonth = incomeMonth - expensesMonth;
+
   const stats = [
     {
+      label: "Income This Month",
+      value: `₱${incomeMonth.toLocaleString("en-PH", { minimumFractionDigits: 2 })}`,
+      icon: TrendingUp,
+      color: "text-green-600",
+      bg: "bg-green-50 dark:bg-green-950/30",
+      testId: "stat-income-month",
+    },
+    {
       label: "Spent This Month",
-      value: `₱${(summary?.totalExpensesThisMonth ?? 0).toLocaleString("en-PH", { minimumFractionDigits: 2 })}`,
+      value: `₱${expensesMonth.toLocaleString("en-PH", { minimumFractionDigits: 2 })}`,
       icon: TrendingDown,
       color: "text-rose-500",
       bg: "bg-rose-50 dark:bg-rose-950/30",
       testId: "stat-spent-month",
+    },
+    {
+      label: netMonth >= 0 ? "Net This Month" : "Net Loss This Month",
+      value: `${netMonth >= 0 ? "+" : "−"}₱${Math.abs(netMonth).toLocaleString("en-PH", { minimumFractionDigits: 2 })}`,
+      icon: netMonth >= 0 ? TrendingUp : TrendingDown,
+      color: netMonth >= 0 ? "text-emerald-600" : "text-rose-500",
+      bg: netMonth >= 0 ? "bg-emerald-50 dark:bg-emerald-950/30" : "bg-rose-50 dark:bg-rose-950/30",
+      testId: "stat-net-month",
     },
     {
       label: "Total Saved",
@@ -209,7 +230,7 @@ export default function Dashboard() {
       )}
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         {stats.map((stat) => {
           const Icon = stat.icon;
           return (
