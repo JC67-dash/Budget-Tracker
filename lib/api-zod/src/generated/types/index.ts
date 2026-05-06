@@ -6,7 +6,11 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from "./account";
+export * from "./accountType";
 export * from "./categoryTotal";
+export * from "./createAccountBody";
+export * from "./createAccountBodyType";
 export * from "./createDebtBody";
 export * from "./createDebtBodyStatus";
 export * from "./createExpenseBody";
@@ -27,6 +31,7 @@ export * from "./goalPeriod";
 export * from "./healthStatus";
 export * from "./installment";
 export * from "./installmentStatus";
+export * from "./listAccountsResponse";
 export * from "./listDebtsResponse";
 export * from "./listExpensesParams";
 export * from "./listExpensesResponse";
@@ -36,6 +41,8 @@ export * from "./listTipsResponse";
 export * from "./listWarrantiesResponse";
 export * from "./tip";
 export * from "./tipCategory";
+export * from "./updateAccountBody";
+export * from "./updateAccountBodyType";
 export * from "./updateDebtBody";
 export * from "./updateDebtBodyStatus";
 export * from "./updateExpenseBody";

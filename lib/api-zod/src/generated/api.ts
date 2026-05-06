@@ -37,6 +37,12 @@ export const GetDashboardSummaryResponse = zod.object({
     .number()
     .describe("Number of pending (unpaid) debts"),
   outstandingDebtsTotal: zod.number().describe("Sum of pending debt amounts"),
+  accountsCount: zod
+    .number()
+    .describe("Number of money accounts (digital wallets, banks, cash)"),
+  accountsTotalBalance: zod
+    .number()
+    .describe("Sum of balances across all money accounts"),
   recentExpenses: zod
     .array(
       zod.object({
@@ -411,6 +417,69 @@ export const UpdateDebtResponse = zod.object({
  * @summary Delete a debt entry
  */
 export const DeleteDebtParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary List money accounts
+ */
+export const ListAccountsResponse = zod.object({
+  accounts: zod.array(
+    zod.object({
+      id: zod.number(),
+      userId: zod.string(),
+      name: zod.string(),
+      type: zod.enum(["cash", "digital_wallet", "bank", "other"]),
+      balance: zod.number(),
+      notes: zod.string().nullish(),
+      createdAt: zod.coerce.date(),
+    }),
+  ),
+});
+
+/**
+ * @summary Create a money account
+ */
+
+export const createAccountBodyBalanceMin = 0;
+
+export const CreateAccountBody = zod.object({
+  name: zod.string().min(1),
+  type: zod.enum(["cash", "digital_wallet", "bank", "other"]).optional(),
+  balance: zod.number().min(createAccountBodyBalanceMin).optional(),
+  notes: zod.string().optional(),
+});
+
+/**
+ * @summary Update a money account
+ */
+export const UpdateAccountParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const updateAccountBodyBalanceMin = 0;
+
+export const UpdateAccountBody = zod.object({
+  name: zod.string().min(1).optional(),
+  type: zod.enum(["cash", "digital_wallet", "bank", "other"]).optional(),
+  balance: zod.number().min(updateAccountBodyBalanceMin).optional(),
+  notes: zod.string().optional(),
+});
+
+export const UpdateAccountResponse = zod.object({
+  id: zod.number(),
+  userId: zod.string(),
+  name: zod.string(),
+  type: zod.enum(["cash", "digital_wallet", "bank", "other"]),
+  balance: zod.number(),
+  notes: zod.string().nullish(),
+  createdAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Delete a money account
+ */
+export const DeleteAccountParams = zod.object({
   id: zod.coerce.number(),
 });
 

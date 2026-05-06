@@ -11,7 +11,8 @@ import {
   LogOut,
   Menu,
   Wallet,
-  HandCoins
+  HandCoins,
+  PiggyBank
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -25,6 +26,7 @@ const navItems = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Expenses", href: "/expenses", icon: Receipt },
   { name: "Goals", href: "/goals", icon: Target },
+  { name: "Accounts", href: "/accounts", icon: PiggyBank },
   { name: "Installments", href: "/installments", icon: CalendarClock },
   { name: "Debts", href: "/debts", icon: HandCoins },
   { name: "Warranties", href: "/warranties", icon: ShieldCheck },

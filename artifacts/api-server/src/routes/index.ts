@@ -8,6 +8,7 @@ import warrantiesRouter from "./warranties";
 import tipsRouter from "./tips";
 import dashboardRouter from "./dashboard";
 import debtsRouter from "./debts";
+import accountsRouter from "./accounts";
 
 const router: IRouter = Router();
 
@@ -20,5 +21,6 @@ router.use(warrantiesRouter);
 router.use(tipsRouter);
 router.use(dashboardRouter);
 router.use(debtsRouter);
+router.use(accountsRouter);
 
 export default router;

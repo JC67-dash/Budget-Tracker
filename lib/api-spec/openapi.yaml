@@ -24,6 +24,8 @@ tags:
     description: Dashboard summary data
   - name: debts
     description: Debt tracker (loans owed)
+  - name: accounts
+    description: Money accounts (digital wallets, banks, cash) where savings/budget are kept
   - name: Storage
     description: Object storage upload and serving endpoints.
 
@@ -517,6 +519,99 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorEnvelope"
 
+  # === ACCOUNTS ===
+  /accounts:
+    get:
+      operationId: listAccounts
+      tags: [accounts]
+      summary: List money accounts
+      responses:
+        "200":
+          description: List of accounts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListAccountsResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+    post:
+      operationId: createAccount
+      tags: [accounts]
+      summary: Create a money account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAccountBody"
+      responses:
+        "201":
+          description: Account created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Account"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+
+  /accounts/{id}:
+    patch:
+      operationId: updateAccount
+      tags: [accounts]
+      summary: Update a money account
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateAccountBody"
+      responses:
+        "200":
+          description: Updated account
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Account"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+    delete:
+      operationId: deleteAccount
+      tags: [accounts]
+      summary: Delete a money account
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+
   # === WARRANTIES ===
   /warranties:
     get:
@@ -745,7 +840,7 @@ components:
     # === DASHBOARD ===
     DashboardSummary:
       type: object
-      required: [totalExpensesThisMonth, totalSaved, activeGoals, upcomingDues, expiringSoonCount, outstandingDebtsCount, outstandingDebtsTotal]
+      required: [totalExpensesThisMonth, totalSaved, activeGoals, upcomingDues, expiringSoonCount, outstandingDebtsCount, outstandingDebtsTotal, accountsCount, accountsTotalBalance]
       properties:
         totalExpensesThisMonth:
           type: number
@@ -768,6 +863,12 @@ components:
         outstandingDebtsTotal:
           type: number
           description: Sum of pending debt amounts
+        accountsCount:
+          type: integer
+          description: Number of money accounts (digital wallets, banks, cash)
+        accountsTotalBalance:
+          type: number
+          description: Sum of balances across all money accounts
         recentExpenses:
           type: array
           items:
@@ -1195,6 +1296,69 @@ components:
         status:
           type: string
           enum: [pending, paid]
+        notes:
+          type: string
+
+    # === ACCOUNTS ===
+    Account:
+      type: object
+      required: [id, userId, name, type, balance, createdAt]
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+          enum: [cash, digital_wallet, bank, other]
+        balance:
+          type: number
+        notes:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+
+    ListAccountsResponse:
+      type: object
+      required: [accounts]
+      properties:
+        accounts:
+          type: array
+          items:
+            $ref: "#/components/schemas/Account"
+
+    CreateAccountBody:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        type:
+          type: string
+          enum: [cash, digital_wallet, bank, other]
+        balance:
+          type: number
+          minimum: 0
+        notes:
+          type: string
+
+    UpdateAccountBody:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        type:
+          type: string
+          enum: [cash, digital_wallet, bank, other]
+        balance:
+          type: number
+          minimum: 0
         notes:
           type: string
 

@@ -20,6 +20,7 @@ import {
   PiggyBank,
   HandCoins,
   CheckCircle2,
+  Wallet,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -224,6 +225,43 @@ export default function Dashboard() {
                     </div>
                   );
                 })
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Accounts (where the money is) */}
+          <Card className="border-none shadow-sm">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base font-semibold flex items-center gap-2">
+                  <Wallet className="h-4 w-4 text-teal-600" />
+                  Accounts
+                </CardTitle>
+                <Link href="/accounts">
+                  <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" data-testid="link-view-accounts">
+                    View all <ArrowRight className="h-3 w-3" />
+                  </Button>
+                </Link>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {(summary?.accountsCount ?? 0) === 0 ? (
+                <div className="p-2.5 rounded-lg bg-muted border border-border" data-testid="alert-no-accounts">
+                  <p className="text-sm font-medium text-foreground">No accounts yet</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Add your wallets and bank accounts to track balances.
+                  </p>
+                </div>
+              ) : (
+                <div className="p-2.5 rounded-lg bg-teal-50 dark:bg-teal-950/20 border border-teal-100 dark:border-teal-900/30" data-testid="alert-accounts-balance">
+                  <p className="text-sm font-medium text-foreground">
+                    ₱{(summary?.accountsTotalBalance ?? 0).toLocaleString("en-PH", { minimumFractionDigits: 2 })}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Across {summary?.accountsCount}{" "}
+                    {summary?.accountsCount === 1 ? "account" : "accounts"}
+                  </p>
+                </div>
               )}
             </CardContent>
           </Card>

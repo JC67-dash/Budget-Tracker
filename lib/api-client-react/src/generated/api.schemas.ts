@@ -44,6 +44,10 @@ export interface DashboardSummary {
   outstandingDebtsCount: number;
   /** Sum of pending debt amounts */
   outstandingDebtsTotal: number;
+  /** Number of money accounts (digital wallets, banks, cash) */
+  accountsCount: number;
+  /** Sum of balances across all money accounts */
+  accountsTotalBalance: number;
   recentExpenses?: Expense[];
   categoryBreakdown?: CategoryTotal[];
 }
@@ -307,6 +311,67 @@ export interface UpdateDebtBody {
   /** @minimum 0 */
   interestPercent?: number | null;
   status?: UpdateDebtBodyStatus;
+  notes?: string;
+}
+
+export type AccountType = (typeof AccountType)[keyof typeof AccountType];
+
+export const AccountType = {
+  cash: "cash",
+  digital_wallet: "digital_wallet",
+  bank: "bank",
+  other: "other",
+} as const;
+
+export interface Account {
+  id: number;
+  userId: string;
+  name: string;
+  type: AccountType;
+  balance: number;
+  notes?: string | null;
+  createdAt: string;
+}
+
+export interface ListAccountsResponse {
+  accounts: Account[];
+}
+
+export type CreateAccountBodyType =
+  (typeof CreateAccountBodyType)[keyof typeof CreateAccountBodyType];
+
+export const CreateAccountBodyType = {
+  cash: "cash",
+  digital_wallet: "digital_wallet",
+  bank: "bank",
+  other: "other",
+} as const;
+
+export interface CreateAccountBody {
+  /** @minLength 1 */
+  name: string;
+  type?: CreateAccountBodyType;
+  /** @minimum 0 */
+  balance?: number;
+  notes?: string;
+}
+
+export type UpdateAccountBodyType =
+  (typeof UpdateAccountBodyType)[keyof typeof UpdateAccountBodyType];
+
+export const UpdateAccountBodyType = {
+  cash: "cash",
+  digital_wallet: "digital_wallet",
+  bank: "bank",
+  other: "other",
+} as const;
+
+export interface UpdateAccountBody {
+  /** @minLength 1 */
+  name?: string;
+  type?: UpdateAccountBodyType;
+  /** @minimum 0 */
+  balance?: number;
   notes?: string;
 }
 

@@ -23,6 +23,10 @@ export interface DashboardSummary {
   outstandingDebtsCount: number;
   /** Sum of pending debt amounts */
   outstandingDebtsTotal: number;
+  /** Number of money accounts (digital wallets, banks, cash) */
+  accountsCount: number;
+  /** Sum of balances across all money accounts */
+  accountsTotalBalance: number;
   recentExpenses?: Expense[];
   categoryBreakdown?: CategoryTotal[];
 }

@@ -31,6 +31,7 @@ pnpm workspace monorepo using TypeScript. Contains the **Budgetarian** personal 
 - `/dashboard` — Financial overview: spending chart, stats, recent expenses, alerts
 - `/expenses` — Expense log with add/delete and category filtering
 - `/goals` — Savings goals with progress bars and saved amount updates
+- `/accounts` — Money accounts (digital wallets, banks, cash) with per-account balances and total
 - `/installments` — Paylater/installment tracker with due-date alerts and mark-as-paid
 - `/debts` — Debt tracker (loans owed) with overdue interest, mark-as-paid, debt-free banner
 - `/warranties` — Warranty keeper with receipt image upload
@@ -48,6 +49,8 @@ pnpm workspace monorepo using TypeScript. Contains the **Budgetarian** personal 
 - `PATCH/DELETE /api/installments/:id` — update/delete
 - `GET/POST /api/debts` — list/create debts
 - `PATCH/DELETE /api/debts/:id` — update/delete
+- `GET/POST /api/accounts` — list/create money accounts
+- `PATCH/DELETE /api/accounts/:id` — update/delete
 - `GET/POST /api/warranties` — list/create warranties
 - `GET /api/warranties/expiring-soon` — expiring within 30 days
 - `PATCH/DELETE /api/warranties/:id` — update/delete
@@ -58,7 +61,7 @@ pnpm workspace monorepo using TypeScript. Contains the **Budgetarian** personal 
 
 ## DB Schema (lib/db/src/schema/index.ts)
 
-Tables: `expenses`, `goals`, `installments`, `warranties`, `debts`
+Tables: `expenses`, `goals`, `installments`, `warranties`, `debts`, `accounts`
 
 ## Key Commands
 

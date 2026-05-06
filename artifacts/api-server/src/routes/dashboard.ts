@@ -1,6 +1,6 @@
 import { Router, type IRouter, type Request, type Response } from "express";
 import { eq, and, sql, desc } from "drizzle-orm";
-import { db, expensesTable, goalsTable, installmentsTable, warrantiesTable, debtsTable } from "@workspace/db";
+import { db, expensesTable, goalsTable, installmentsTable, warrantiesTable, debtsTable, accountsTable } from "@workspace/db";
 import { requireAuth, type AuthRequest } from "../middleware/auth";
 
 const router: IRouter = Router();
@@ -17,7 +17,7 @@ router.get("/dashboard/summary", requireAuth, async (req: Request, res: Response
   thirtyDaysLater.setDate(thirtyDaysLater.getDate() + 30);
   const upcoming30 = thirtyDaysLater.toISOString().slice(0, 10);
 
-  const [totalExpenseResult, goalsResult, upcomingDuesResult, expiringSoonResult, recentExpenses, categoryBreakdown, outstandingDebtsResult] =
+  const [totalExpenseResult, goalsResult, upcomingDuesResult, expiringSoonResult, recentExpenses, categoryBreakdown, outstandingDebtsResult, accountsResult] =
     await Promise.all([
       db
         .select({ total: sql<number>`coalesce(sum(amount::numeric), 0)` })
@@ -69,6 +69,13 @@ router.get("/dashboard/summary", requireAuth, async (req: Request, res: Response
         })
         .from(debtsTable)
         .where(and(eq(debtsTable.userId, userId), eq(debtsTable.status, "pending"))),
+      db
+        .select({
+          count: sql<number>`count(*)`,
+          total: sql<number>`coalesce(sum(balance::numeric), 0)`,
+        })
+        .from(accountsTable)
+        .where(eq(accountsTable.userId, userId)),
     ]);
 
   const totalSaved = goalsResult.reduce((sum, g) => sum + Number(g.savedAmount), 0);
@@ -82,6 +89,8 @@ router.get("/dashboard/summary", requireAuth, async (req: Request, res: Response
     expiringSoonCount: Number(expiringSoonResult[0]?.count ?? 0),
     outstandingDebtsCount: Number(outstandingDebtsResult[0]?.count ?? 0),
     outstandingDebtsTotal: Number(outstandingDebtsResult[0]?.total ?? 0),
+    accountsCount: Number(accountsResult[0]?.count ?? 0),
+    accountsTotalBalance: Number(accountsResult[0]?.total ?? 0),
     recentExpenses: recentExpenses.map((e) => ({ ...e, amount: Number(e.amount) })),
     categoryBreakdown: categoryBreakdown.map((c) => ({ category: c.category, total: Number(c.total) })),
   });
