@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "wouter";
 import {
   useGetDashboardSummary,
@@ -33,11 +34,18 @@ import { Button } from "@/components/ui/button";
 import {
   PieChart,
   Pie,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
   Tooltip,
   ResponsiveContainer,
   Cell,
   Legend,
 } from "recharts";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { PieChart as PieIcon, BarChart3 } from "lucide-react";
 import { format, addDays, parseISO, differenceInDays } from "date-fns";
 
 const CHART_COLORS = ["#1f8a63", "#2bb37f", "#0f5a40", "#5fd1a4", "#0b3d2c", "#8be0bb", "#46c596"];
@@ -66,6 +74,7 @@ export default function Dashboard() {
   const upcoming = upcomingData?.installments ?? [];
   const expiringSoon = expiringSoonData?.warranties ?? [];
   const categoryData = summary?.categoryBreakdown ?? [];
+  const [chartType, setChartType] = useState<"pie" | "bar">("pie");
 
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
@@ -248,15 +257,63 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Spending by Category Chart */}
         <Card className="border-none shadow-sm lg:col-span-2">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold">Spending This Month</CardTitle>
-            <CardDescription>Breakdown by category</CardDescription>
+          <CardHeader className="pb-2 flex flex-row items-start justify-between gap-2">
+            <div>
+              <CardTitle className="text-base font-semibold">Spending This Month</CardTitle>
+              <CardDescription>Breakdown by category</CardDescription>
+            </div>
+            <ToggleGroup
+              type="single"
+              size="sm"
+              value={chartType}
+              onValueChange={(v) => v && setChartType(v as "pie" | "bar")}
+              className="shrink-0"
+              data-testid="toggle-chart-type"
+            >
+              <ToggleGroupItem value="pie" aria-label="Pie chart" data-testid="toggle-chart-pie">
+                <PieIcon className="h-4 w-4" />
+              </ToggleGroupItem>
+              <ToggleGroupItem value="bar" aria-label="Bar chart" data-testid="toggle-chart-bar">
+                <BarChart3 className="h-4 w-4" />
+              </ToggleGroupItem>
+            </ToggleGroup>
           </CardHeader>
           <CardContent>
             {categoryData.length === 0 ? (
               <div className="flex items-center justify-center h-40 text-muted-foreground text-sm">
                 No spending data yet. Add your first expense.
               </div>
+            ) : chartType === "bar" ? (
+              <ResponsiveContainer width="100%" height={260}>
+                <BarChart data={categoryData} margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis
+                    dataKey="category"
+                    tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <Tooltip
+                    formatter={(v: number) => [`₱${Number(v).toFixed(2)}`, "Amount"]}
+                    contentStyle={{
+                      background: "hsl(var(--card))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: "8px",
+                      fontSize: 12,
+                    }}
+                  />
+                  <Bar dataKey="total" radius={[6, 6, 0, 0]}>
+                    {categoryData.map((_, index) => (
+                      <Cell key={index} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
             ) : (
               <ResponsiveContainer width="100%" height={260}>
                 <PieChart>
