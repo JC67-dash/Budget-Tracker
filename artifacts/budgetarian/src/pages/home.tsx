@@ -1,7 +1,7 @@
 import { Link } from "wouter";
 import { ArrowRight, ShieldCheck, Target, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import logoUrl from "@assets/LOGO_OOP2_1778085443172.png";
+import logoUrl from "@assets/Budgetarian_20260507_020534_0000_1778090829736.png";
 
 export default function Home() {
   return (
@@ -9,7 +9,7 @@ export default function Home() {
       <header className="py-6 px-4 sm:px-8 flex items-center justify-between border-b border-border/50 max-w-6xl mx-auto w-full">
         <div className="flex items-center gap-2">
           <img src={logoUrl} alt="Budgetarian" className="h-10 w-10 object-contain" />
-          <span className="font-extrabold text-2xl tracking-tight text-[#113320] dark:text-green-300">Budgetarian</span>
+          <span className="font-extrabold text-2xl tracking-tight text-primary dark:text-primary">Budgetarian</span>
         </div>
         <div className="flex items-center gap-4">
           <Link href="/sign-in" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors" data-testid="link-signin">

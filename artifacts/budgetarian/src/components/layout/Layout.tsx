@@ -17,7 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import logoUrl from "@assets/LOGO_OOP2_1778085443172.png";
+import logoUrl from "@assets/Budgetarian_20260507_020534_0000_1778090829736.png";
 
 interface LayoutProps {
   children: ReactNode;
@@ -72,7 +72,7 @@ export default function Layout({ children }: LayoutProps) {
       <aside className="hidden md:flex w-64 flex-col border-r border-border bg-sidebar shrink-0 h-screen sticky top-0">
         <div className="p-6 flex items-center gap-2">
           <img src={logoUrl} alt="Budgetarian" className="h-9 w-9 object-contain" />
-          <span className="font-extrabold text-xl tracking-tight text-[#113320] dark:text-green-300">
+          <span className="font-extrabold text-xl tracking-tight text-primary dark:text-primary">
             Budgetarian
           </span>
         </div>
@@ -113,7 +113,7 @@ export default function Layout({ children }: LayoutProps) {
         <header className="md:hidden flex items-center justify-between p-4 border-b border-border bg-background sticky top-0 z-10">
           <div className="flex items-center gap-2">
             <img src={logoUrl} alt="Budgetarian" className="h-8 w-8 object-contain" />
-            <span className="font-extrabold text-lg tracking-tight text-[#113320] dark:text-green-300">
+            <span className="font-extrabold text-lg tracking-tight text-primary dark:text-primary">
               Budgetarian
             </span>
           </div>
@@ -127,7 +127,7 @@ export default function Layout({ children }: LayoutProps) {
             <SheetContent side="left" className="w-64 p-0 flex flex-col bg-sidebar">
               <div className="p-6 flex items-center gap-2">
                 <img src={logoUrl} alt="Budgetarian" className="h-9 w-9 object-contain" />
-                <span className="font-extrabold text-xl tracking-tight text-[#113320] dark:text-green-300">
+                <span className="font-extrabold text-xl tracking-tight text-primary dark:text-primary">
                   Budgetarian
                 </span>
               </div>
