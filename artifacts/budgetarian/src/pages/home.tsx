@@ -1,15 +1,14 @@
 import { Link } from "wouter";
-import { Wallet, ArrowRight, ShieldCheck, Target, TrendingUp } from "lucide-react";
+import { ArrowRight, ShieldCheck, Target, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import logoUrl from "@assets/LOGO_OOP2_1778085443172.png";
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <header className="py-6 px-4 sm:px-8 flex items-center justify-between border-b border-border/50 max-w-6xl mx-auto w-full">
         <div className="flex items-center gap-2">
-          <div className="bg-primary p-2 rounded-lg text-primary-foreground">
-            <Wallet className="h-6 w-6" />
-          </div>
+          <img src={logoUrl} alt="Budgetarian" className="h-10 w-10 object-contain" />
           <span className="font-bold text-2xl tracking-tight text-foreground">Budgetarian</span>
         </div>
         <div className="flex items-center gap-4">

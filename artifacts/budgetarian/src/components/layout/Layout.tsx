@@ -10,13 +10,13 @@ import {
   Lightbulb, 
   LogOut,
   Menu,
-  Wallet,
   HandCoins,
   PiggyBank
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import logoUrl from "@assets/LOGO_OOP2_1778085443172.png";
 
 interface LayoutProps {
   children: ReactNode;
@@ -69,9 +69,7 @@ export default function Layout({ children }: LayoutProps) {
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex w-64 flex-col border-r border-border bg-sidebar shrink-0 h-screen sticky top-0">
         <div className="p-6 flex items-center gap-2">
-          <div className="bg-primary p-2 rounded-lg text-primary-foreground">
-            <Wallet className="h-5 w-5" />
-          </div>
+          <img src={logoUrl} alt="Budgetarian" className="h-9 w-9 object-contain" />
           <span className="font-bold text-xl tracking-tight text-foreground">Budgetarian</span>
         </div>
         
@@ -110,9 +108,7 @@ export default function Layout({ children }: LayoutProps) {
       <div className="flex-1 flex flex-col min-w-0">
         <header className="md:hidden flex items-center justify-between p-4 border-b border-border bg-background sticky top-0 z-10">
           <div className="flex items-center gap-2">
-            <div className="bg-primary p-1.5 rounded-md text-primary-foreground">
-              <Wallet className="h-5 w-5" />
-            </div>
+            <img src={logoUrl} alt="Budgetarian" className="h-8 w-8 object-contain" />
             <span className="font-bold text-lg text-foreground">Budgetarian</span>
           </div>
           
@@ -124,9 +120,7 @@ export default function Layout({ children }: LayoutProps) {
             </SheetTrigger>
             <SheetContent side="left" className="w-64 p-0 flex flex-col bg-sidebar">
               <div className="p-6 flex items-center gap-2">
-                <div className="bg-primary p-2 rounded-lg text-primary-foreground">
-                  <Wallet className="h-5 w-5" />
-                </div>
+                <img src={logoUrl} alt="Budgetarian" className="h-9 w-9 object-contain" />
                 <span className="font-bold text-xl tracking-tight text-foreground">Budgetarian</span>
               </div>
               <div className="flex-1 overflow-y-auto py-4">
