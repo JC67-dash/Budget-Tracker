@@ -31,18 +31,16 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
+  PieChart,
+  Pie,
   Tooltip,
   ResponsiveContainer,
   Cell,
+  Legend,
 } from "recharts";
 import { format, addDays, parseISO, differenceInDays } from "date-fns";
 
-const CHART_COLORS = ["#86b981", "#5e9a5a", "#a8cfa3", "#6ba368", "#c5dec1"];
+const CHART_COLORS = ["#1f8a63", "#2bb37f", "#0f5a40", "#5fd1a4", "#0b3d2c", "#8be0bb", "#46c596"];
 
 export default function Dashboard() {
   const { data: summary, isLoading: summaryLoading } = useGetDashboardSummary({
@@ -260,22 +258,13 @@ export default function Dashboard() {
                 No spending data yet. Add your first expense.
               </div>
             ) : (
-              <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={categoryData} margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis
-                    dataKey="category"
-                    tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
-                    tickLine={false}
-                    axisLine={false}
-                  />
-                  <YAxis
-                    tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
-                    tickLine={false}
-                    axisLine={false}
-                  />
+              <ResponsiveContainer width="100%" height={260}>
+                <PieChart>
                   <Tooltip
-                    formatter={(v: number) => [`₱${Number(v).toFixed(2)}`, "Amount"]}
+                    formatter={(v: number, _n, p: { payload?: { category?: string } }) => [
+                      `₱${Number(v).toFixed(2)}`,
+                      p?.payload?.category ?? "Amount",
+                    ]}
                     contentStyle={{
                       background: "hsl(var(--card))",
                       border: "1px solid hsl(var(--border))",
@@ -283,12 +272,29 @@ export default function Dashboard() {
                       fontSize: 12,
                     }}
                   />
-                  <Bar dataKey="total" radius={[6, 6, 0, 0]}>
+                  <Legend
+                    verticalAlign="bottom"
+                    height={36}
+                    iconType="circle"
+                    wrapperStyle={{ fontSize: 12 }}
+                  />
+                  <Pie
+                    data={categoryData}
+                    dataKey="total"
+                    nameKey="category"
+                    cx="50%"
+                    cy="45%"
+                    innerRadius={50}
+                    outerRadius={85}
+                    paddingAngle={2}
+                    stroke="hsl(var(--card))"
+                    strokeWidth={2}
+                  >
                     {categoryData.map((_, index) => (
                       <Cell key={index} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                     ))}
-                  </Bar>
-                </BarChart>
+                  </Pie>
+                </PieChart>
               </ResponsiveContainer>
             )}
           </CardContent>
