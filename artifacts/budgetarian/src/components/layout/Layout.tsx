@@ -11,7 +11,8 @@ import {
   LogOut,
   Menu,
   HandCoins,
-  PiggyBank
+  PiggyBank,
+  TrendingUp
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -24,6 +25,7 @@ interface LayoutProps {
 
 const navItems = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Income", href: "/income", icon: TrendingUp },
   { name: "Expenses", href: "/expenses", icon: Receipt },
   { name: "Goals", href: "/goals", icon: Target },
   { name: "Accounts", href: "/accounts", icon: PiggyBank },

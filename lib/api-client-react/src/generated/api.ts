@@ -22,6 +22,7 @@ import type {
   CreateDebtBody,
   CreateExpenseBody,
   CreateGoalBody,
+  CreateIncomeBody,
   CreateInstallmentBody,
   CreateWarrantyBody,
   DashboardSummary,
@@ -31,12 +32,15 @@ import type {
   ExpenseSummary,
   Goal,
   HealthStatus,
+  Income,
   Installment,
   ListAccountsResponse,
   ListDebtsResponse,
   ListExpensesParams,
   ListExpensesResponse,
   ListGoalsResponse,
+  ListIncomeParams,
+  ListIncomeResponse,
   ListInstallmentsResponse,
   ListTipsResponse,
   ListWarrantiesResponse,
@@ -45,6 +49,7 @@ import type {
   UpdateDebtBody,
   UpdateExpenseBody,
   UpdateGoalBody,
+  UpdateIncomeBody,
   UpdateInstallmentBody,
   UpdateWarrantyBody,
   UploadUrlRequest,
@@ -724,6 +729,357 @@ export const useDeleteExpense = <
   TContext
 > => {
   return useMutation(getDeleteExpenseMutationOptions(options));
+};
+
+/**
+ * @summary List income entries
+ */
+export const getListIncomeUrl = (params?: ListIncomeParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/income?${stringifiedParams}`
+    : `/api/income`;
+};
+
+export const listIncome = async (
+  params?: ListIncomeParams,
+  options?: RequestInit,
+): Promise<ListIncomeResponse> => {
+  return customFetch<ListIncomeResponse>(getListIncomeUrl(params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListIncomeQueryKey = (params?: ListIncomeParams) => {
+  return [`/api/income`, ...(params ? [params] : [])] as const;
+};
+
+export const getListIncomeQueryOptions = <
+  TData = Awaited<ReturnType<typeof listIncome>>,
+  TError = ErrorType<ErrorEnvelope>,
+>(
+  params?: ListIncomeParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listIncome>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListIncomeQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listIncome>>> = ({
+    signal,
+  }) => listIncome(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listIncome>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListIncomeQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listIncome>>
+>;
+export type ListIncomeQueryError = ErrorType<ErrorEnvelope>;
+
+/**
+ * @summary List income entries
+ */
+
+export function useListIncome<
+  TData = Awaited<ReturnType<typeof listIncome>>,
+  TError = ErrorType<ErrorEnvelope>,
+>(
+  params?: ListIncomeParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listIncome>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListIncomeQueryOptions(params, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Create an income entry
+ */
+export const getCreateIncomeUrl = () => {
+  return `/api/income`;
+};
+
+export const createIncome = async (
+  createIncomeBody: CreateIncomeBody,
+  options?: RequestInit,
+): Promise<Income> => {
+  return customFetch<Income>(getCreateIncomeUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createIncomeBody),
+  });
+};
+
+export const getCreateIncomeMutationOptions = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createIncome>>,
+    TError,
+    { data: BodyType<CreateIncomeBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createIncome>>,
+  TError,
+  { data: BodyType<CreateIncomeBody> },
+  TContext
+> => {
+  const mutationKey = ["createIncome"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createIncome>>,
+    { data: BodyType<CreateIncomeBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createIncome(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateIncomeMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createIncome>>
+>;
+export type CreateIncomeMutationBody = BodyType<CreateIncomeBody>;
+export type CreateIncomeMutationError = ErrorType<ErrorEnvelope>;
+
+/**
+ * @summary Create an income entry
+ */
+export const useCreateIncome = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createIncome>>,
+    TError,
+    { data: BodyType<CreateIncomeBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createIncome>>,
+  TError,
+  { data: BodyType<CreateIncomeBody> },
+  TContext
+> => {
+  return useMutation(getCreateIncomeMutationOptions(options));
+};
+
+/**
+ * @summary Update an income entry
+ */
+export const getUpdateIncomeUrl = (id: number) => {
+  return `/api/income/${id}`;
+};
+
+export const updateIncome = async (
+  id: number,
+  updateIncomeBody: UpdateIncomeBody,
+  options?: RequestInit,
+): Promise<Income> => {
+  return customFetch<Income>(getUpdateIncomeUrl(id), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(updateIncomeBody),
+  });
+};
+
+export const getUpdateIncomeMutationOptions = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateIncome>>,
+    TError,
+    { id: number; data: BodyType<UpdateIncomeBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateIncome>>,
+  TError,
+  { id: number; data: BodyType<UpdateIncomeBody> },
+  TContext
+> => {
+  const mutationKey = ["updateIncome"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateIncome>>,
+    { id: number; data: BodyType<UpdateIncomeBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateIncome(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateIncomeMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateIncome>>
+>;
+export type UpdateIncomeMutationBody = BodyType<UpdateIncomeBody>;
+export type UpdateIncomeMutationError = ErrorType<ErrorEnvelope>;
+
+/**
+ * @summary Update an income entry
+ */
+export const useUpdateIncome = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateIncome>>,
+    TError,
+    { id: number; data: BodyType<UpdateIncomeBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateIncome>>,
+  TError,
+  { id: number; data: BodyType<UpdateIncomeBody> },
+  TContext
+> => {
+  return useMutation(getUpdateIncomeMutationOptions(options));
+};
+
+/**
+ * @summary Delete an income entry
+ */
+export const getDeleteIncomeUrl = (id: number) => {
+  return `/api/income/${id}`;
+};
+
+export const deleteIncome = async (
+  id: number,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteIncomeUrl(id), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteIncomeMutationOptions = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteIncome>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteIncome>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["deleteIncome"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteIncome>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteIncome(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteIncomeMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteIncome>>
+>;
+
+export type DeleteIncomeMutationError = ErrorType<ErrorEnvelope>;
+
+/**
+ * @summary Delete an income entry
+ */
+export const useDeleteIncome = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteIncome>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteIncome>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getDeleteIncomeMutationOptions(options));
 };
 
 /**

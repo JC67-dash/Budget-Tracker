@@ -23,6 +23,10 @@ export const GetDashboardSummaryResponse = zod.object({
   totalExpensesThisMonth: zod
     .number()
     .describe("Total expense amount this month"),
+  totalIncomeThisMonth: zod.number().describe("Total income amount this month"),
+  totalIncomeAllTime: zod
+    .number()
+    .describe("Total income amount across all time"),
   totalSaved: zod
     .number()
     .describe("Total amount saved across all active goals"),
@@ -178,6 +182,78 @@ export const UpdateExpenseResponse = zod.object({
  * @summary Delete an expense
  */
 export const DeleteExpenseParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary List income entries
+ */
+export const listIncomeQueryLimitDefault = 100;
+export const listIncomeQueryOffsetDefault = 0;
+
+export const ListIncomeQueryParams = zod.object({
+  limit: zod.coerce.number().default(listIncomeQueryLimitDefault),
+  offset: zod.coerce.number().default(listIncomeQueryOffsetDefault),
+});
+
+export const ListIncomeResponse = zod.object({
+  income: zod.array(
+    zod.object({
+      id: zod.number(),
+      userId: zod.string(),
+      amount: zod.number(),
+      source: zod.string(),
+      date: zod.coerce.date(),
+      notes: zod.string().nullish(),
+      createdAt: zod.coerce.date(),
+    }),
+  ),
+  total: zod.number().describe("Number of income entries"),
+  totalAmount: zod.number().describe("Sum of all income amounts"),
+});
+
+/**
+ * @summary Create an income entry
+ */
+export const createIncomeBodyAmountMin = 0.01;
+
+export const CreateIncomeBody = zod.object({
+  amount: zod.number().min(createIncomeBodyAmountMin),
+  source: zod.string().min(1),
+  date: zod.coerce.date(),
+  notes: zod.string().optional(),
+});
+
+/**
+ * @summary Update an income entry
+ */
+export const UpdateIncomeParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const updateIncomeBodyAmountMin = 0.01;
+
+export const UpdateIncomeBody = zod.object({
+  amount: zod.number().min(updateIncomeBodyAmountMin).optional(),
+  source: zod.string().optional(),
+  date: zod.coerce.date().optional(),
+  notes: zod.string().optional(),
+});
+
+export const UpdateIncomeResponse = zod.object({
+  id: zod.number(),
+  userId: zod.string(),
+  amount: zod.number(),
+  source: zod.string(),
+  date: zod.coerce.date(),
+  notes: zod.string().nullish(),
+  createdAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Delete an income entry
+ */
+export const DeleteIncomeParams = zod.object({
   id: zod.coerce.number(),
 });
 

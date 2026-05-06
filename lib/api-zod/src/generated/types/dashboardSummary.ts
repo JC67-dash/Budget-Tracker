@@ -11,6 +11,10 @@ import type { Expense } from "./expense";
 export interface DashboardSummary {
   /** Total expense amount this month */
   totalExpensesThisMonth: number;
+  /** Total income amount this month */
+  totalIncomeThisMonth: number;
+  /** Total income amount across all time */
+  totalIncomeAllTime: number;
   /** Total amount saved across all active goals */
   totalSaved: number;
   /** Number of active savings goals */

@@ -32,6 +32,10 @@ export interface CategoryTotal {
 export interface DashboardSummary {
   /** Total expense amount this month */
   totalExpensesThisMonth: number;
+  /** Total income amount this month */
+  totalIncomeThisMonth: number;
+  /** Total income amount across all time */
+  totalIncomeAllTime: number;
   /** Total amount saved across all active goals */
   totalSaved: number;
   /** Number of active savings goals */
@@ -50,6 +54,41 @@ export interface DashboardSummary {
   accountsTotalBalance: number;
   recentExpenses?: Expense[];
   categoryBreakdown?: CategoryTotal[];
+}
+
+export interface Income {
+  id: number;
+  userId: string;
+  amount: number;
+  source: string;
+  date: string;
+  notes?: string | null;
+  createdAt: string;
+}
+
+export interface ListIncomeResponse {
+  income: Income[];
+  /** Number of income entries */
+  total: number;
+  /** Sum of all income amounts */
+  totalAmount: number;
+}
+
+export interface CreateIncomeBody {
+  /** @minimum 0.01 */
+  amount: number;
+  /** @minLength 1 */
+  source: string;
+  date: string;
+  notes?: string;
+}
+
+export interface UpdateIncomeBody {
+  /** @minimum 0.01 */
+  amount?: number;
+  source?: string;
+  date?: string;
+  notes?: string;
 }
 
 export interface ListExpensesResponse {
@@ -447,4 +486,9 @@ export type ListExpensesParams = {
   limit?: number;
   offset?: number;
   category?: string;
+};
+
+export type ListIncomeParams = {
+  limit?: number;
+  offset?: number;
 };

@@ -1,6 +1,6 @@
 import { Router, type IRouter, type Request, type Response } from "express";
 import { eq, and, sql, desc } from "drizzle-orm";
-import { db, expensesTable, goalsTable, installmentsTable, warrantiesTable, debtsTable, accountsTable } from "@workspace/db";
+import { db, expensesTable, goalsTable, installmentsTable, warrantiesTable, debtsTable, accountsTable, incomeTable } from "@workspace/db";
 import { requireAuth, type AuthRequest } from "../middleware/auth";
 
 const router: IRouter = Router();
@@ -17,7 +17,7 @@ router.get("/dashboard/summary", requireAuth, async (req: Request, res: Response
   thirtyDaysLater.setDate(thirtyDaysLater.getDate() + 30);
   const upcoming30 = thirtyDaysLater.toISOString().slice(0, 10);
 
-  const [totalExpenseResult, goalsResult, upcomingDuesResult, expiringSoonResult, recentExpenses, categoryBreakdown, outstandingDebtsResult, accountsResult] =
+  const [totalExpenseResult, goalsResult, upcomingDuesResult, expiringSoonResult, recentExpenses, categoryBreakdown, outstandingDebtsResult, accountsResult, incomeMonthResult, incomeAllResult] =
     await Promise.all([
       db
         .select({ total: sql<number>`coalesce(sum(amount::numeric), 0)` })
@@ -76,6 +76,14 @@ router.get("/dashboard/summary", requireAuth, async (req: Request, res: Response
         })
         .from(accountsTable)
         .where(eq(accountsTable.userId, userId)),
+      db
+        .select({ total: sql<number>`coalesce(sum(amount::numeric), 0)` })
+        .from(incomeTable)
+        .where(and(eq(incomeTable.userId, userId), sql`date >= ${thisMonthStart}`)),
+      db
+        .select({ total: sql<number>`coalesce(sum(amount::numeric), 0)` })
+        .from(incomeTable)
+        .where(eq(incomeTable.userId, userId)),
     ]);
 
   const totalSaved = goalsResult.reduce((sum, g) => sum + Number(g.savedAmount), 0);
@@ -83,6 +91,8 @@ router.get("/dashboard/summary", requireAuth, async (req: Request, res: Response
 
   res.json({
     totalExpensesThisMonth: Number(totalExpenseResult[0]?.total ?? 0),
+    totalIncomeThisMonth: Number(incomeMonthResult[0]?.total ?? 0),
+    totalIncomeAllTime: Number(incomeAllResult[0]?.total ?? 0),
     totalSaved,
     activeGoals,
     upcomingDues: Number(upcomingDuesResult[0]?.count ?? 0),

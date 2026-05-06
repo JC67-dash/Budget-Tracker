@@ -221,6 +221,110 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorEnvelope"
 
+  # === INCOME ===
+  /income:
+    get:
+      operationId: listIncome
+      tags: [income]
+      summary: List income entries
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 100
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        "200":
+          description: List of income entries
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListIncomeResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+    post:
+      operationId: createIncome
+      tags: [income]
+      summary: Create an income entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateIncomeBody"
+      responses:
+        "201":
+          description: Income created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Income"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+
+  /income/{id}:
+    patch:
+      operationId: updateIncome
+      tags: [income]
+      summary: Update an income entry
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateIncomeBody"
+      responses:
+        "200":
+          description: Updated income entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Income"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+    delete:
+      operationId: deleteIncome
+      tags: [income]
+      summary: Delete an income entry
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+
   # === SAVINGS GOALS ===
   /goals:
     get:
@@ -871,11 +975,17 @@ components:
     # === DASHBOARD ===
     DashboardSummary:
       type: object
-      required: [totalExpensesThisMonth, totalSaved, activeGoals, upcomingDues, expiringSoonCount, outstandingDebtsCount, outstandingDebtsTotal, accountsCount, accountsTotalBalance]
+      required: [totalExpensesThisMonth, totalIncomeThisMonth, totalIncomeAllTime, totalSaved, activeGoals, upcomingDues, expiringSoonCount, outstandingDebtsCount, outstandingDebtsTotal, accountsCount, accountsTotalBalance]
       properties:
         totalExpensesThisMonth:
           type: number
           description: Total expense amount this month
+        totalIncomeThisMonth:
+          type: number
+          description: Total income amount this month
+        totalIncomeAllTime:
+          type: number
+          description: Total income amount across all time
         totalSaved:
           type: number
           description: Total amount saved across all active goals
@@ -917,6 +1027,74 @@ components:
           type: string
         total:
           type: number
+
+    # === INCOME ===
+    Income:
+      type: object
+      required: [id, userId, amount, source, date, createdAt]
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        amount:
+          type: number
+        source:
+          type: string
+        date:
+          type: string
+          format: date
+        notes:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+
+    ListIncomeResponse:
+      type: object
+      required: [income, total, totalAmount]
+      properties:
+        income:
+          type: array
+          items:
+            $ref: "#/components/schemas/Income"
+        total:
+          type: integer
+          description: Number of income entries
+        totalAmount:
+          type: number
+          description: Sum of all income amounts
+
+    CreateIncomeBody:
+      type: object
+      required: [amount, source, date]
+      properties:
+        amount:
+          type: number
+          minimum: 0.01
+        source:
+          type: string
+          minLength: 1
+        date:
+          type: string
+          format: date
+        notes:
+          type: string
+
+    UpdateIncomeBody:
+      type: object
+      properties:
+        amount:
+          type: number
+          minimum: 0.01
+        source:
+          type: string
+        date:
+          type: string
+          format: date
+        notes:
+          type: string
 
     # === EXPENSES ===
     Expense:

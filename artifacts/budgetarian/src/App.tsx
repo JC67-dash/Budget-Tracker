@@ -9,6 +9,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import Home from "./pages/home";
 import Layout from "./components/layout/Layout";
 import Expenses from "./pages/expenses";
+import Income from "./pages/income";
 import Dashboard from "./pages/dashboard";
 import Goals from "./pages/goals";
 import Tips from "./pages/tips";
@@ -105,6 +106,7 @@ function ClerkProviderWithRoutes() {
             
             <Route path="/dashboard"><ProtectedRoute component={Dashboard} /></Route>
             <Route path="/expenses"><ProtectedRoute component={Expenses} /></Route>
+            <Route path="/income"><ProtectedRoute component={Income} /></Route>
             <Route path="/goals"><ProtectedRoute component={Goals} /></Route>
             <Route path="/accounts"><ProtectedRoute component={Accounts} /></Route>
             <Route path="/installments"><ProtectedRoute component={Installments} /></Route>
