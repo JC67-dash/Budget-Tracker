@@ -118,8 +118,7 @@ public class ClerkProxyController {
             if (name.startsWith(":")
                     || name.equalsIgnoreCase("transfer-encoding")
                     || name.equalsIgnoreCase("connection")
-                    || name.equalsIgnoreCase("content-length")
-                    || name.equalsIgnoreCase("content-encoding")) {
+                    || name.equalsIgnoreCase("content-length")) {
                 return;
             }
             responseHeaders.addAll(name, values);
