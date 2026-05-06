@@ -39,7 +39,7 @@ import {
 } from "recharts";
 import { format, addDays, parseISO, differenceInDays } from "date-fns";
 
-const CHART_COLORS = ["#0d9488", "#14b8a6", "#2dd4bf", "#5eead4", "#99f6e4"];
+const CHART_COLORS = ["#86b981", "#5e9a5a", "#a8cfa3", "#6ba368", "#c5dec1"];
 
 export default function Dashboard() {
   const { data: summary, isLoading: summaryLoading } = useGetDashboardSummary({
