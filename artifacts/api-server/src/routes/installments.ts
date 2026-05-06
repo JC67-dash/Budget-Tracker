@@ -24,6 +24,7 @@ function mapInstallment(i: typeof installmentsTable.$inferSelect) {
   return {
     ...i,
     amount,
+    monthlyAmount: i.monthlyAmount !== null ? Number(i.monthlyAmount) : null,
     paidAmount,
     remainingAmount: Math.max(0, amount - paidAmount),
   };
@@ -48,13 +49,14 @@ router.post("/installments", requireAuth, async (req: Request, res: Response): P
     return;
   }
 
-  const { amount, paidAmount, dueDate, status, ...rest } = parsed.data;
+  const { amount, monthlyAmount, paidAmount, dueDate, status, ...rest } = parsed.data;
   const [installment] = await db
     .insert(installmentsTable)
     .values({
       ...rest,
       userId,
       amount: String(amount),
+      monthlyAmount: monthlyAmount !== undefined ? String(monthlyAmount) : null,
       paidAmount: paidAmount !== undefined ? String(paidAmount) : "0",
       dueDate: toDateStr(dueDate)!,
       status: status ?? "pending",
@@ -139,9 +141,12 @@ router.patch("/installments/:id", requireAuth, async (req: Request, res: Respons
     return;
   }
 
-  const { amount, paidAmount, dueDate, ...rest } = parsed.data;
+  const { amount, monthlyAmount, paidAmount, dueDate, ...rest } = parsed.data;
   const updateData: Record<string, unknown> = { ...rest };
   if (amount !== undefined) updateData.amount = String(amount);
+  if (monthlyAmount !== undefined) {
+    updateData.monthlyAmount = monthlyAmount === null ? null : String(monthlyAmount);
+  }
   if (paidAmount !== undefined) updateData.paidAmount = String(paidAmount);
   if (dueDate !== undefined) updateData.dueDate = toDateStr(dueDate);
 

@@ -12,6 +12,8 @@ export interface CreateInstallmentBody {
   name: string;
   /** @minimum 0.01 */
   amount: number;
+  /** @minimum 0.01 */
+  monthlyAmount?: number;
   /** @minimum 0 */
   paidAmount?: number;
   dueDate: Date;

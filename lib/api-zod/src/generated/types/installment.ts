@@ -12,6 +12,7 @@ export interface Installment {
   userId: string;
   name: string;
   amount: number;
+  monthlyAmount?: number | null;
   paidAmount: number;
   remainingAmount: number;
   dueDate: Date;

@@ -262,6 +262,7 @@ export const ListInstallmentsResponse = zod.object({
       userId: zod.string(),
       name: zod.string(),
       amount: zod.number(),
+      monthlyAmount: zod.number().nullish(),
       paidAmount: zod.number(),
       remainingAmount: zod.number(),
       dueDate: zod.coerce.date(),
@@ -278,11 +279,17 @@ export const ListInstallmentsResponse = zod.object({
 
 export const createInstallmentBodyAmountMin = 0.01;
 
+export const createInstallmentBodyMonthlyAmountMin = 0.01;
+
 export const createInstallmentBodyPaidAmountMin = 0;
 
 export const CreateInstallmentBody = zod.object({
   name: zod.string().min(1),
   amount: zod.number().min(createInstallmentBodyAmountMin),
+  monthlyAmount: zod
+    .number()
+    .min(createInstallmentBodyMonthlyAmountMin)
+    .optional(),
   paidAmount: zod.number().min(createInstallmentBodyPaidAmountMin).optional(),
   dueDate: zod.coerce.date(),
   status: zod.enum(["pending", "paid", "overdue"]).optional(),
@@ -299,6 +306,7 @@ export const GetUpcomingInstallmentsResponse = zod.object({
       userId: zod.string(),
       name: zod.string(),
       amount: zod.number(),
+      monthlyAmount: zod.number().nullish(),
       paidAmount: zod.number(),
       remainingAmount: zod.number(),
       dueDate: zod.coerce.date(),
@@ -327,6 +335,7 @@ export const RecordInstallmentPaymentResponse = zod.object({
   userId: zod.string(),
   name: zod.string(),
   amount: zod.number(),
+  monthlyAmount: zod.number().nullish(),
   paidAmount: zod.number(),
   remainingAmount: zod.number(),
   dueDate: zod.coerce.date(),
@@ -344,11 +353,17 @@ export const UpdateInstallmentParams = zod.object({
 
 export const updateInstallmentBodyAmountMin = 0.01;
 
+export const updateInstallmentBodyMonthlyAmountMin = 0.01;
+
 export const updateInstallmentBodyPaidAmountMin = 0;
 
 export const UpdateInstallmentBody = zod.object({
   name: zod.string().min(1).optional(),
   amount: zod.number().min(updateInstallmentBodyAmountMin).optional(),
+  monthlyAmount: zod
+    .number()
+    .min(updateInstallmentBodyMonthlyAmountMin)
+    .nullish(),
   paidAmount: zod.number().min(updateInstallmentBodyPaidAmountMin).optional(),
   dueDate: zod.coerce.date().optional(),
   status: zod.enum(["pending", "paid", "overdue"]).optional(),
@@ -360,6 +375,7 @@ export const UpdateInstallmentResponse = zod.object({
   userId: zod.string(),
   name: zod.string(),
   amount: zod.number(),
+  monthlyAmount: zod.number().nullish(),
   paidAmount: zod.number(),
   remainingAmount: zod.number(),
   dueDate: zod.coerce.date(),

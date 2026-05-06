@@ -162,6 +162,7 @@ export interface Installment {
   userId: string;
   name: string;
   amount: number;
+  monthlyAmount?: number | null;
   paidAmount: number;
   remainingAmount: number;
   dueDate: string;
@@ -188,6 +189,8 @@ export interface CreateInstallmentBody {
   name: string;
   /** @minimum 0.01 */
   amount: number;
+  /** @minimum 0.01 */
+  monthlyAmount?: number;
   /** @minimum 0 */
   paidAmount?: number;
   dueDate: string;
@@ -209,6 +212,8 @@ export interface UpdateInstallmentBody {
   name?: string;
   /** @minimum 0.01 */
   amount?: number;
+  /** @minimum 0.01 */
+  monthlyAmount?: number | null;
   /** @minimum 0 */
   paidAmount?: number;
   dueDate?: string;

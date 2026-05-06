@@ -1095,6 +1095,9 @@ components:
           type: string
         amount:
           type: number
+        monthlyAmount:
+          type: number
+          nullable: true
         paidAmount:
           type: number
         remainingAmount:
@@ -1131,6 +1134,9 @@ components:
         amount:
           type: number
           minimum: 0.01
+        monthlyAmount:
+          type: number
+          minimum: 0.01
         paidAmount:
           type: number
           minimum: 0
@@ -1152,6 +1158,10 @@ components:
         amount:
           type: number
           minimum: 0.01
+        monthlyAmount:
+          type: number
+          minimum: 0.01
+          nullable: true
         paidAmount:
           type: number
           minimum: 0

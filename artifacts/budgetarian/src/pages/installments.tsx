@@ -40,7 +40,8 @@ import { format, parseISO, differenceInDays } from "date-fns";
 
 const installmentSchema = z.object({
   name: z.string().min(1, "Name is required"),
-  amount: z.coerce.number().min(0.01, "Amount must be greater than 0"),
+  amount: z.coerce.number().min(0.01, "Total amount must be greater than 0"),
+  monthlyAmount: z.coerce.number().min(0).optional(),
   dueDate: z.string().min(1, "Due date is required"),
   status: z.enum(["pending", "paid", "overdue"]),
   notes: z.string().optional(),
@@ -122,6 +123,7 @@ export default function Installments() {
     defaultValues: {
       name: "",
       amount: 0,
+      monthlyAmount: undefined,
       dueDate: format(new Date(), "yyyy-MM-dd"),
       status: "pending",
       notes: "",
@@ -129,7 +131,13 @@ export default function Installments() {
   });
 
   const onSubmit = (data: z.infer<typeof installmentSchema>) => {
-    createInstallment.mutate({ data });
+    const { monthlyAmount, ...rest } = data;
+    createInstallment.mutate({
+      data: {
+        ...rest,
+        ...(monthlyAmount && monthlyAmount > 0 ? { monthlyAmount } : {}),
+      },
+    });
   };
 
   const markAsPaid = (id: number) => {
@@ -188,7 +196,7 @@ export default function Installments() {
                     name="amount"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Amount</FormLabel>
+                        <FormLabel>Total Amount</FormLabel>
                         <FormControl>
                           <Input type="number" step="0.01" {...field} data-testid="input-installment-amount" />
                         </FormControl>
@@ -198,18 +206,38 @@ export default function Installments() {
                   />
                   <FormField
                     control={form.control}
-                    name="dueDate"
+                    name="monthlyAmount"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Due Date</FormLabel>
+                        <FormLabel>Per Month <span className="text-muted-foreground font-normal">(optional)</span></FormLabel>
                         <FormControl>
-                          <Input type="date" {...field} data-testid="input-installment-due-date" />
+                          <Input
+                            type="number"
+                            step="0.01"
+                            placeholder="e.g. 5000"
+                            value={field.value ?? ""}
+                            onChange={(e) => field.onChange(e.target.value === "" ? undefined : e.target.value)}
+                            data-testid="input-installment-monthly"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                 </div>
+                <FormField
+                  control={form.control}
+                  name="dueDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Next Due Date</FormLabel>
+                      <FormControl>
+                        <Input type="date" {...field} data-testid="input-installment-due-date" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 <FormField
                   control={form.control}
                   name="status"
@@ -319,18 +347,24 @@ export default function Installments() {
                     <div className="flex items-center gap-3 shrink-0">
                       <div className="text-right">
                         <div className="font-semibold text-foreground">₱{remaining.toFixed(2)}</div>
-                        {hasPartial && (
-                          <div className="text-[11px] text-muted-foreground">
-                            of ₱{total.toFixed(2)}
-                          </div>
-                        )}
+                        <div className="text-[11px] text-muted-foreground space-x-1">
+                          {hasPartial && <span>of ₱{total.toFixed(2)}</span>}
+                          {!hasPartial && inst.status !== "paid" && <span>Total ₱{total.toFixed(2)}</span>}
+                          {inst.monthlyAmount != null && inst.monthlyAmount > 0 && (
+                            <span className="text-foreground/70">· ₱{Number(inst.monthlyAmount).toFixed(2)}/mo</span>
+                          )}
+                        </div>
                       </div>
                       {inst.status !== "paid" && (
                         <Button
                           variant="outline"
                           size="sm"
                           className="text-xs h-8 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
-                          onClick={() => { setPayingId(inst.id); setPayAmount(""); }}
+                          onClick={() => {
+                            setPayingId(inst.id);
+                            const m = inst.monthlyAmount;
+                            setPayAmount(m != null && m > 0 ? Math.min(Number(m), remaining).toFixed(2) : "");
+                          }}
                           data-testid={`button-pay-${inst.id}`}
                         >
                           <Wallet className="h-3.5 w-3.5 mr-1" /> Pay
@@ -414,6 +448,11 @@ export default function Installments() {
                     Paid ₱{paid.toFixed(2)} of ₱{total.toFixed(2)} · Remaining{" "}
                     <span className="font-semibold text-foreground">₱{remaining.toFixed(2)}</span>
                   </div>
+                  {inst.monthlyAmount != null && inst.monthlyAmount > 0 && (
+                    <div className="text-muted-foreground mt-0.5">
+                      Monthly: ₱{Number(inst.monthlyAmount).toFixed(2)}
+                    </div>
+                  )}
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-sm font-medium">Amount paid this time (₱)</label>
@@ -427,7 +466,18 @@ export default function Installments() {
                     placeholder={remaining.toFixed(2)}
                     data-testid="input-payment-amount"
                   />
-                  <div className="flex gap-2 pt-1">
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    {inst.monthlyAmount != null && inst.monthlyAmount > 0 && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="text-xs"
+                        onClick={() => setPayAmount(Math.min(Number(inst.monthlyAmount), remaining).toFixed(2))}
+                      >
+                        1 month (₱{Number(inst.monthlyAmount).toFixed(2)})
+                      </Button>
+                    )}
                     <Button
                       type="button"
                       variant="outline"
