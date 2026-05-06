@@ -10,7 +10,8 @@ import {
   Lightbulb, 
   LogOut,
   Menu,
-  Wallet
+  Wallet,
+  HandCoins
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -25,6 +26,7 @@ const navItems = [
   { name: "Expenses", href: "/expenses", icon: Receipt },
   { name: "Goals", href: "/goals", icon: Target },
   { name: "Installments", href: "/installments", icon: CalendarClock },
+  { name: "Debts", href: "/debts", icon: HandCoins },
   { name: "Warranties", href: "/warranties", icon: ShieldCheck },
   { name: "Tips & Ideas", href: "/tips", icon: Lightbulb },
 ];

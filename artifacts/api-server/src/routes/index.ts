@@ -7,6 +7,7 @@ import installmentsRouter from "./installments";
 import warrantiesRouter from "./warranties";
 import tipsRouter from "./tips";
 import dashboardRouter from "./dashboard";
+import debtsRouter from "./debts";
 
 const router: IRouter = Router();
 
@@ -18,5 +19,6 @@ router.use(installmentsRouter);
 router.use(warrantiesRouter);
 router.use(tipsRouter);
 router.use(dashboardRouter);
+router.use(debtsRouter);
 
 export default router;

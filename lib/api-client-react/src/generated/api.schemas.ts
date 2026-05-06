@@ -40,6 +40,10 @@ export interface DashboardSummary {
   upcomingDues: number;
   /** Number of warranties expiring within 30 days */
   expiringSoonCount: number;
+  /** Number of pending (unpaid) debts */
+  outstandingDebtsCount: number;
+  /** Sum of pending debt amounts */
+  outstandingDebtsTotal: number;
   recentExpenses?: Expense[];
   categoryBreakdown?: CategoryTotal[];
 }
@@ -235,6 +239,74 @@ export interface UpdateWarrantyBody {
   purchaseDate?: string;
   expiryDate?: string;
   receiptPath?: string;
+  notes?: string;
+}
+
+export type DebtStatus = (typeof DebtStatus)[keyof typeof DebtStatus];
+
+export const DebtStatus = {
+  pending: "pending",
+  paid: "paid",
+} as const;
+
+export interface Debt {
+  id: number;
+  userId: string;
+  name: string;
+  creditor?: string | null;
+  amount: number;
+  borrowedDate: string;
+  dueDate: string;
+  interestPercent?: number | null;
+  status: DebtStatus;
+  notes?: string | null;
+  createdAt: string;
+}
+
+export interface ListDebtsResponse {
+  debts: Debt[];
+}
+
+export type CreateDebtBodyStatus =
+  (typeof CreateDebtBodyStatus)[keyof typeof CreateDebtBodyStatus];
+
+export const CreateDebtBodyStatus = {
+  pending: "pending",
+  paid: "paid",
+} as const;
+
+export interface CreateDebtBody {
+  /** @minLength 1 */
+  name: string;
+  creditor?: string;
+  /** @minimum 0.01 */
+  amount: number;
+  borrowedDate: string;
+  dueDate: string;
+  /** @minimum 0 */
+  interestPercent?: number | null;
+  status?: CreateDebtBodyStatus;
+  notes?: string;
+}
+
+export type UpdateDebtBodyStatus =
+  (typeof UpdateDebtBodyStatus)[keyof typeof UpdateDebtBodyStatus];
+
+export const UpdateDebtBodyStatus = {
+  pending: "pending",
+  paid: "paid",
+} as const;
+
+export interface UpdateDebtBody {
+  name?: string;
+  creditor?: string;
+  /** @minimum 0.01 */
+  amount?: number;
+  borrowedDate?: string;
+  dueDate?: string;
+  /** @minimum 0 */
+  interestPercent?: number | null;
+  status?: UpdateDebtBodyStatus;
   notes?: string;
 }
 

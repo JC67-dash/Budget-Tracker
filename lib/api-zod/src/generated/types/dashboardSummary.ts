@@ -19,6 +19,10 @@ export interface DashboardSummary {
   upcomingDues: number;
   /** Number of warranties expiring within 30 days */
   expiringSoonCount: number;
+  /** Number of pending (unpaid) debts */
+  outstandingDebtsCount: number;
+  /** Sum of pending debt amounts */
+  outstandingDebtsTotal: number;
   recentExpenses?: Expense[];
   categoryBreakdown?: CategoryTotal[];
 }

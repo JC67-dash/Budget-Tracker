@@ -14,6 +14,7 @@ import Goals from "./pages/goals";
 import Tips from "./pages/tips";
 import Installments from "./pages/installments";
 import Warranties from "./pages/warranties";
+import Debts from "./pages/debts";
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
@@ -105,6 +106,7 @@ function ClerkProviderWithRoutes() {
             <Route path="/expenses"><ProtectedRoute component={Expenses} /></Route>
             <Route path="/goals"><ProtectedRoute component={Goals} /></Route>
             <Route path="/installments"><ProtectedRoute component={Installments} /></Route>
+            <Route path="/debts"><ProtectedRoute component={Debts} /></Route>
             <Route path="/warranties"><ProtectedRoute component={Warranties} /></Route>
             <Route path="/tips"><ProtectedRoute component={Tips} /></Route>
 

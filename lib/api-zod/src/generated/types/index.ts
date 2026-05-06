@@ -7,6 +7,8 @@
  */
 
 export * from "./categoryTotal";
+export * from "./createDebtBody";
+export * from "./createDebtBodyStatus";
 export * from "./createExpenseBody";
 export * from "./createGoalBody";
 export * from "./createGoalBodyPeriod";
@@ -14,6 +16,8 @@ export * from "./createInstallmentBody";
 export * from "./createInstallmentBodyStatus";
 export * from "./createWarrantyBody";
 export * from "./dashboardSummary";
+export * from "./debt";
+export * from "./debtStatus";
 export * from "./errorEnvelope";
 export * from "./expense";
 export * from "./expenseSummary";
@@ -23,6 +27,7 @@ export * from "./goalPeriod";
 export * from "./healthStatus";
 export * from "./installment";
 export * from "./installmentStatus";
+export * from "./listDebtsResponse";
 export * from "./listExpensesParams";
 export * from "./listExpensesResponse";
 export * from "./listGoalsResponse";
@@ -31,6 +36,8 @@ export * from "./listTipsResponse";
 export * from "./listWarrantiesResponse";
 export * from "./tip";
 export * from "./tipCategory";
+export * from "./updateDebtBody";
+export * from "./updateDebtBodyStatus";
 export * from "./updateExpenseBody";
 export * from "./updateGoalBody";
 export * from "./updateGoalBodyPeriod";

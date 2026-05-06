@@ -33,6 +33,10 @@ export const GetDashboardSummaryResponse = zod.object({
   expiringSoonCount: zod
     .number()
     .describe("Number of warranties expiring within 30 days"),
+  outstandingDebtsCount: zod
+    .number()
+    .describe("Number of pending (unpaid) debts"),
+  outstandingDebtsTotal: zod.number().describe("Sum of pending debt amounts"),
   recentExpenses: zod
     .array(
       zod.object({
@@ -324,6 +328,89 @@ export const UpdateInstallmentResponse = zod.object({
  * @summary Delete an installment entry
  */
 export const DeleteInstallmentParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary List debts
+ */
+export const ListDebtsResponse = zod.object({
+  debts: zod.array(
+    zod.object({
+      id: zod.number(),
+      userId: zod.string(),
+      name: zod.string(),
+      creditor: zod.string().nullish(),
+      amount: zod.number(),
+      borrowedDate: zod.coerce.date(),
+      dueDate: zod.coerce.date(),
+      interestPercent: zod.number().nullish(),
+      status: zod.enum(["pending", "paid"]),
+      notes: zod.string().nullish(),
+      createdAt: zod.coerce.date(),
+    }),
+  ),
+});
+
+/**
+ * @summary Create a debt entry
+ */
+
+export const createDebtBodyAmountMin = 0.01;
+
+export const createDebtBodyInterestPercentMin = 0;
+
+export const CreateDebtBody = zod.object({
+  name: zod.string().min(1),
+  creditor: zod.string().optional(),
+  amount: zod.number().min(createDebtBodyAmountMin),
+  borrowedDate: zod.coerce.date(),
+  dueDate: zod.coerce.date(),
+  interestPercent: zod.number().min(createDebtBodyInterestPercentMin).nullish(),
+  status: zod.enum(["pending", "paid"]).optional(),
+  notes: zod.string().optional(),
+});
+
+/**
+ * @summary Update a debt entry
+ */
+export const UpdateDebtParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const updateDebtBodyAmountMin = 0.01;
+
+export const updateDebtBodyInterestPercentMin = 0;
+
+export const UpdateDebtBody = zod.object({
+  name: zod.string().optional(),
+  creditor: zod.string().optional(),
+  amount: zod.number().min(updateDebtBodyAmountMin).optional(),
+  borrowedDate: zod.coerce.date().optional(),
+  dueDate: zod.coerce.date().optional(),
+  interestPercent: zod.number().min(updateDebtBodyInterestPercentMin).nullish(),
+  status: zod.enum(["pending", "paid"]).optional(),
+  notes: zod.string().optional(),
+});
+
+export const UpdateDebtResponse = zod.object({
+  id: zod.number(),
+  userId: zod.string(),
+  name: zod.string(),
+  creditor: zod.string().nullish(),
+  amount: zod.number(),
+  borrowedDate: zod.coerce.date(),
+  dueDate: zod.coerce.date(),
+  interestPercent: zod.number().nullish(),
+  status: zod.enum(["pending", "paid"]),
+  notes: zod.string().nullish(),
+  createdAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Delete a debt entry
+ */
+export const DeleteDebtParams = zod.object({
   id: zod.coerce.number(),
 });
 

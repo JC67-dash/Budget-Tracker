@@ -18,6 +18,8 @@ import {
   ArrowRight,
   DollarSign,
   PiggyBank,
+  HandCoins,
+  CheckCircle2,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -222,6 +224,47 @@ export default function Dashboard() {
                     </div>
                   );
                 })
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Outstanding Debts */}
+          <Card className="border-none shadow-sm">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base font-semibold flex items-center gap-2">
+                  <HandCoins
+                    className={`h-4 w-4 ${
+                      (summary?.outstandingDebtsCount ?? 0) > 0
+                        ? "text-rose-500"
+                        : "text-teal-500"
+                    }`}
+                  />
+                  Debts
+                </CardTitle>
+                <Link href="/debts">
+                  <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" data-testid="link-view-debts">
+                    View all <ArrowRight className="h-3 w-3" />
+                  </Button>
+                </Link>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {(summary?.outstandingDebtsCount ?? 0) === 0 ? (
+                <div className="flex items-center gap-2 p-2.5 rounded-lg bg-teal-50 dark:bg-teal-950/20 border border-teal-100 dark:border-teal-900/30" data-testid="alert-debt-free">
+                  <CheckCircle2 className="h-4 w-4 text-teal-600 shrink-0" />
+                  <p className="text-sm font-medium text-foreground">You're debt-free!</p>
+                </div>
+              ) : (
+                <div className="p-2.5 rounded-lg bg-rose-50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/30" data-testid="alert-outstanding-debts">
+                  <p className="text-sm font-medium text-foreground">
+                    ₱{(summary?.outstandingDebtsTotal ?? 0).toLocaleString("en-PH", { minimumFractionDigits: 2 })}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Across {summary?.outstandingDebtsCount}{" "}
+                    {summary?.outstandingDebtsCount === 1 ? "debt" : "debts"}
+                  </p>
+                </div>
               )}
             </CardContent>
           </Card>
