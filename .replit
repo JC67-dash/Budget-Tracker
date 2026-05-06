@@ -38,3 +38,8 @@ externalPort = 3000
 [[ports]]
 localPort = 20420
 externalPort = 3001
+
+[userenv]
+
+[userenv.production]
+VITE_CLERK_PROXY_URL = "https://budgettracker2.replit.app/api/__clerk"
