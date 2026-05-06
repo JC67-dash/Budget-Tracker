@@ -23,6 +23,17 @@ import * as z from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
   ResponsiveContainer,
   AreaChart,
   Area,
@@ -337,16 +348,37 @@ export default function Expenses() {
                   </div>
                   <div className="flex items-center gap-4">
                     <span className="font-semibold text-foreground">₱{expense.amount.toFixed(2)}</span>
-                    <Button 
-                      variant="ghost" 
-                      size="icon"
-                      className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={() => deleteExpense.mutate({ id: expense.id })}
-                      disabled={deleteExpense.isPending}
-                      data-testid={`button-delete-expense-${expense.id}`}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                          disabled={deleteExpense.isPending}
+                          data-testid={`button-delete-expense-${expense.id}`}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete this expense?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            "{expense.description}" (₱{expense.amount.toFixed(2)}) will be permanently removed. This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel data-testid={`button-cancel-delete-expense-${expense.id}`}>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => deleteExpense.mutate({ id: expense.id })}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            data-testid={`button-confirm-delete-expense-${expense.id}`}
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 </div>
               ))}

@@ -1,0 +1,15 @@
+com/budgetarian/controller/StorageController.class
+com/budgetarian/storage/ObjectStorageService$BlobComponents.class
+com/budgetarian/controller/DashboardController.class
+com/budgetarian/controller/ExpensesController.class
+com/budgetarian/controller/GoalsController.class
+com/budgetarian/BudgetarianApplication.class
+com/budgetarian/controller/WarrantiesController.class
+com/budgetarian/controller/TipsController.class
+com/budgetarian/controller/ClerkProxyController.class
+com/budgetarian/auth/ClerkAuthInterceptor.class
+com/budgetarian/storage/ObjectStorageService.class
+com/budgetarian/controller/HealthController.class
+com/budgetarian/controller/InstallmentsController.class
+com/budgetarian/storage/ObjectNotFoundError.class
+com/budgetarian/config/AppConfig.class

@@ -1,0 +1,14 @@
+/home/runner/workspace/artifacts/java-api/src/main/java/com/budgetarian/storage/ObjectNotFoundError.java
+/home/runner/workspace/artifacts/java-api/src/main/java/com/budgetarian/config/AppConfig.java
+/home/runner/workspace/artifacts/java-api/src/main/java/com/budgetarian/controller/GoalsController.java
+/home/runner/workspace/artifacts/java-api/src/main/java/com/budgetarian/controller/DashboardController.java
+/home/runner/workspace/artifacts/java-api/src/main/java/com/budgetarian/controller/HealthController.java
+/home/runner/workspace/artifacts/java-api/src/main/java/com/budgetarian/controller/ClerkProxyController.java
+/home/runner/workspace/artifacts/java-api/src/main/java/com/budgetarian/storage/ObjectStorageService.java
+/home/runner/workspace/artifacts/java-api/src/main/java/com/budgetarian/auth/ClerkAuthInterceptor.java
+/home/runner/workspace/artifacts/java-api/src/main/java/com/budgetarian/controller/TipsController.java
+/home/runner/workspace/artifacts/java-api/src/main/java/com/budgetarian/controller/ExpensesController.java
+/home/runner/workspace/artifacts/java-api/src/main/java/com/budgetarian/controller/StorageController.java
+/home/runner/workspace/artifacts/java-api/src/main/java/com/budgetarian/controller/InstallmentsController.java
+/home/runner/workspace/artifacts/java-api/src/main/java/com/budgetarian/controller/WarrantiesController.java
+/home/runner/workspace/artifacts/java-api/src/main/java/com/budgetarian/BudgetarianApplication.java
