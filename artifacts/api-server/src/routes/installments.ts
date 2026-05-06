@@ -65,7 +65,7 @@ router.post("/installments", requireAuth, async (req: Request, res: Response): P
     return;
   }
 
-  const { amount, monthlyAmount, paidAmount, dueDate, status, ...rest } = parsed.data;
+  const { amount, monthlyAmount, paidAmount, dueDate, status, reminderDays, ...rest } = parsed.data;
   const [installment] = await db
     .insert(installmentsTable)
     .values({
@@ -76,6 +76,7 @@ router.post("/installments", requireAuth, async (req: Request, res: Response): P
       paidAmount: paidAmount !== undefined ? String(paidAmount) : "0",
       dueDate: toDateStr(dueDate)!,
       status: status ?? "pending",
+      ...(reminderDays !== undefined ? { reminderDays } : {}),
     })
     .returning();
 
@@ -162,7 +163,7 @@ router.patch("/installments/:id", requireAuth, async (req: Request, res: Respons
     return;
   }
 
-  const { amount, monthlyAmount, paidAmount, dueDate, ...rest } = parsed.data;
+  const { amount, monthlyAmount, paidAmount, dueDate, reminderDays, ...rest } = parsed.data;
   const updateData: Record<string, unknown> = { ...rest };
   if (amount !== undefined) updateData.amount = String(amount);
   if (monthlyAmount !== undefined) {
@@ -170,6 +171,7 @@ router.patch("/installments/:id", requireAuth, async (req: Request, res: Respons
   }
   if (paidAmount !== undefined) updateData.paidAmount = String(paidAmount);
   if (dueDate !== undefined) updateData.dueDate = toDateStr(dueDate);
+  if (reminderDays !== undefined) updateData.reminderDays = reminderDays;
 
   // If marking paid, set paidAmount to full amount and stamp paidAt
   if (rest.status === "paid") {

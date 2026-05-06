@@ -1115,6 +1115,10 @@ components:
           type: string
           format: date
           nullable: true
+        reminderDays:
+          type: integer
+          minimum: 0
+          maximum: 60
         createdAt:
           type: string
           format: date-time
@@ -1152,6 +1156,10 @@ components:
           enum: [pending, paid, overdue]
         notes:
           type: string
+        reminderDays:
+          type: integer
+          minimum: 0
+          maximum: 60
 
     UpdateInstallmentBody:
       type: object
@@ -1177,6 +1185,10 @@ components:
           enum: [pending, paid, overdue]
         notes:
           type: string
+        reminderDays:
+          type: integer
+          minimum: 0
+          maximum: 60
 
     RecordPaymentBody:
       type: object

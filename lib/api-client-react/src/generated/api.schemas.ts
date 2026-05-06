@@ -169,6 +169,11 @@ export interface Installment {
   status: InstallmentStatus;
   notes?: string | null;
   paidAt?: string | null;
+  /**
+   * @minimum 0
+   * @maximum 60
+   */
+  reminderDays?: number;
   createdAt: string;
 }
 
@@ -197,6 +202,11 @@ export interface CreateInstallmentBody {
   dueDate: string;
   status?: CreateInstallmentBodyStatus;
   notes?: string;
+  /**
+   * @minimum 0
+   * @maximum 60
+   */
+  reminderDays?: number;
 }
 
 export type UpdateInstallmentBodyStatus =
@@ -220,6 +230,11 @@ export interface UpdateInstallmentBody {
   dueDate?: string;
   status?: UpdateInstallmentBodyStatus;
   notes?: string;
+  /**
+   * @minimum 0
+   * @maximum 60
+   */
+  reminderDays?: number;
 }
 
 export interface RecordPaymentBody {

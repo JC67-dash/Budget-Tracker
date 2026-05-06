@@ -76,7 +76,8 @@ export default function Dashboard() {
       const remaining = Number(i.amount) - Number(i.paidAmount ?? 0);
       if (remaining <= 0) return false;
       const days = differenceInDays(parseISO(i.dueDate), todayStart);
-      return i.status === "overdue" || days <= 3;
+      const lead = i.reminderDays ?? 3;
+      return i.status === "overdue" || days < 0 || days <= lead;
     })
     .sort((a, b) => a.dueDate.localeCompare(b.dueDate));
 

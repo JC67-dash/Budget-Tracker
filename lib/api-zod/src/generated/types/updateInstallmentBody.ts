@@ -19,4 +19,9 @@ export interface UpdateInstallmentBody {
   dueDate?: Date;
   status?: UpdateInstallmentBodyStatus;
   notes?: string;
+  /**
+   * @minimum 0
+   * @maximum 60
+   */
+  reminderDays?: number;
 }

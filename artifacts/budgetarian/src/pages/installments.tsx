@@ -46,6 +46,7 @@ const installmentSchema = z.object({
   dueDate: z.string().min(1, "Due date is required"),
   status: z.enum(["pending", "paid", "overdue"]),
   notes: z.string().optional(),
+  reminderDays: z.coerce.number().int().min(0, "Must be 0 or more").max(60, "Must be 60 or less").optional(),
 });
 
 const statusConfig = {
@@ -138,6 +139,7 @@ export default function Installments() {
       dueDate: format(new Date(), "yyyy-MM-dd"),
       status: "pending",
       notes: "",
+      reminderDays: 3,
     },
   });
 
@@ -171,6 +173,7 @@ export default function Installments() {
       dueDate: format(new Date(), "yyyy-MM-dd"),
       status: "pending",
       notes: "",
+      reminderDays: 3,
     });
     setIsAddOpen(true);
   };
@@ -185,6 +188,7 @@ export default function Installments() {
       dueDate: inst.dueDate,
       status: inst.status as "pending" | "paid" | "overdue",
       notes: inst.notes ?? "",
+      reminderDays: inst.reminderDays ?? 3,
     });
     setIsAddOpen(true);
   };
@@ -359,6 +363,32 @@ export default function Installments() {
                           <SelectItem value="overdue">Overdue</SelectItem>
                         </SelectContent>
                       </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="reminderDays"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Remind me (days before due)</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          min="0"
+                          max="60"
+                          step="1"
+                          placeholder="3"
+                          {...field}
+                          value={field.value ?? ""}
+                          onChange={(e) => field.onChange(e.target.value === "" ? undefined : Number(e.target.value))}
+                          data-testid="input-installment-reminder"
+                        />
+                      </FormControl>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Show this on the dashboard reminder when within this many days of the due date.
+                      </p>
                       <FormMessage />
                     </FormItem>
                   )}

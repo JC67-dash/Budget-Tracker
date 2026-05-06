@@ -19,5 +19,10 @@ export interface Installment {
   status: InstallmentStatus;
   notes?: string | null;
   paidAt?: Date | null;
+  /**
+   * @minimum 0
+   * @maximum 60
+   */
+  reminderDays?: number;
   createdAt: Date;
 }

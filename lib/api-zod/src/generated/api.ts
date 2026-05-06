@@ -255,6 +255,9 @@ export const DeleteGoalParams = zod.object({
 /**
  * @summary List installment entries
  */
+export const listInstallmentsResponseInstallmentsItemReminderDaysMin = 0;
+export const listInstallmentsResponseInstallmentsItemReminderDaysMax = 60;
+
 export const ListInstallmentsResponse = zod.object({
   installments: zod.array(
     zod.object({
@@ -269,6 +272,11 @@ export const ListInstallmentsResponse = zod.object({
       status: zod.enum(["pending", "paid", "overdue"]),
       notes: zod.string().nullish(),
       paidAt: zod.coerce.date().nullish(),
+      reminderDays: zod
+        .number()
+        .min(listInstallmentsResponseInstallmentsItemReminderDaysMin)
+        .max(listInstallmentsResponseInstallmentsItemReminderDaysMax)
+        .optional(),
       createdAt: zod.coerce.date(),
     }),
   ),
@@ -284,6 +292,9 @@ export const createInstallmentBodyMonthlyAmountMin = 0.01;
 
 export const createInstallmentBodyPaidAmountMin = 0;
 
+export const createInstallmentBodyReminderDaysMin = 0;
+export const createInstallmentBodyReminderDaysMax = 60;
+
 export const CreateInstallmentBody = zod.object({
   name: zod.string().min(1),
   amount: zod.number().min(createInstallmentBodyAmountMin),
@@ -295,11 +306,19 @@ export const CreateInstallmentBody = zod.object({
   dueDate: zod.coerce.date(),
   status: zod.enum(["pending", "paid", "overdue"]).optional(),
   notes: zod.string().optional(),
+  reminderDays: zod
+    .number()
+    .min(createInstallmentBodyReminderDaysMin)
+    .max(createInstallmentBodyReminderDaysMax)
+    .optional(),
 });
 
 /**
  * @summary Get installments due within 7 days
  */
+export const getUpcomingInstallmentsResponseInstallmentsItemReminderDaysMin = 0;
+export const getUpcomingInstallmentsResponseInstallmentsItemReminderDaysMax = 60;
+
 export const GetUpcomingInstallmentsResponse = zod.object({
   installments: zod.array(
     zod.object({
@@ -314,6 +333,11 @@ export const GetUpcomingInstallmentsResponse = zod.object({
       status: zod.enum(["pending", "paid", "overdue"]),
       notes: zod.string().nullish(),
       paidAt: zod.coerce.date().nullish(),
+      reminderDays: zod
+        .number()
+        .min(getUpcomingInstallmentsResponseInstallmentsItemReminderDaysMin)
+        .max(getUpcomingInstallmentsResponseInstallmentsItemReminderDaysMax)
+        .optional(),
       createdAt: zod.coerce.date(),
     }),
   ),
@@ -332,6 +356,9 @@ export const RecordInstallmentPaymentBody = zod.object({
   amount: zod.number().min(recordInstallmentPaymentBodyAmountMin),
 });
 
+export const recordInstallmentPaymentResponseReminderDaysMin = 0;
+export const recordInstallmentPaymentResponseReminderDaysMax = 60;
+
 export const RecordInstallmentPaymentResponse = zod.object({
   id: zod.number(),
   userId: zod.string(),
@@ -344,6 +371,11 @@ export const RecordInstallmentPaymentResponse = zod.object({
   status: zod.enum(["pending", "paid", "overdue"]),
   notes: zod.string().nullish(),
   paidAt: zod.coerce.date().nullish(),
+  reminderDays: zod
+    .number()
+    .min(recordInstallmentPaymentResponseReminderDaysMin)
+    .max(recordInstallmentPaymentResponseReminderDaysMax)
+    .optional(),
   createdAt: zod.coerce.date(),
 });
 
@@ -360,6 +392,9 @@ export const updateInstallmentBodyMonthlyAmountMin = 0.01;
 
 export const updateInstallmentBodyPaidAmountMin = 0;
 
+export const updateInstallmentBodyReminderDaysMin = 0;
+export const updateInstallmentBodyReminderDaysMax = 60;
+
 export const UpdateInstallmentBody = zod.object({
   name: zod.string().min(1).optional(),
   amount: zod.number().min(updateInstallmentBodyAmountMin).optional(),
@@ -371,7 +406,15 @@ export const UpdateInstallmentBody = zod.object({
   dueDate: zod.coerce.date().optional(),
   status: zod.enum(["pending", "paid", "overdue"]).optional(),
   notes: zod.string().optional(),
+  reminderDays: zod
+    .number()
+    .min(updateInstallmentBodyReminderDaysMin)
+    .max(updateInstallmentBodyReminderDaysMax)
+    .optional(),
 });
+
+export const updateInstallmentResponseReminderDaysMin = 0;
+export const updateInstallmentResponseReminderDaysMax = 60;
 
 export const UpdateInstallmentResponse = zod.object({
   id: zod.number(),
@@ -385,6 +428,11 @@ export const UpdateInstallmentResponse = zod.object({
   status: zod.enum(["pending", "paid", "overdue"]),
   notes: zod.string().nullish(),
   paidAt: zod.coerce.date().nullish(),
+  reminderDays: zod
+    .number()
+    .min(updateInstallmentResponseReminderDaysMin)
+    .max(updateInstallmentResponseReminderDaysMax)
+    .optional(),
   createdAt: zod.coerce.date(),
 });
 
