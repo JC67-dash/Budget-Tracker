@@ -4,6 +4,8 @@ import {
   getGetDashboardSummaryQueryKey,
   useGetUpcomingInstallments,
   getGetUpcomingInstallmentsQueryKey,
+  useListInstallments,
+  getListInstallmentsQueryKey,
   useGetExpiringSoonWarranties,
   getGetExpiringSoonWarrantiesQueryKey,
   useGetExpenseSummary,
@@ -50,6 +52,10 @@ export default function Dashboard() {
     query: { queryKey: getGetUpcomingInstallmentsQueryKey() },
   });
 
+  const { data: allInstallmentsData } = useListInstallments({
+    query: { queryKey: getListInstallmentsQueryKey() },
+  });
+
   const { data: expiringSoonData } = useGetExpiringSoonWarranties({
     query: { queryKey: getGetExpiringSoonWarrantiesQueryKey() },
   });
@@ -61,6 +67,18 @@ export default function Dashboard() {
   const upcoming = upcomingData?.installments ?? [];
   const expiringSoon = expiringSoonData?.warranties ?? [];
   const categoryData = summary?.categoryBreakdown ?? [];
+
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+  const reminders = (allInstallmentsData?.installments ?? [])
+    .filter((i) => {
+      if (i.status === "paid") return false;
+      const remaining = Number(i.amount) - Number(i.paidAmount ?? 0);
+      if (remaining <= 0) return false;
+      const days = differenceInDays(parseISO(i.dueDate), todayStart);
+      return i.status === "overdue" || days <= 3;
+    })
+    .sort((a, b) => a.dueDate.localeCompare(b.dueDate));
 
   if (summaryLoading) {
     return (
@@ -124,6 +142,70 @@ export default function Dashboard() {
           {format(new Date(), "EEEE, MMMM d, yyyy")} — here&apos;s your financial snapshot.
         </p>
       </div>
+
+      {reminders.length > 0 && (
+        <Card
+          className="border border-amber-200 dark:border-amber-900/40 bg-amber-50/60 dark:bg-amber-950/20 shadow-sm"
+          data-testid="card-installment-reminders"
+        >
+          <CardContent className="p-4 sm:p-5">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
+              <div className="flex items-center gap-2">
+                <div className="h-9 w-9 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 flex items-center justify-center">
+                  <AlertTriangle className="h-4 w-4" />
+                </div>
+                <div>
+                  <p className="font-semibold text-foreground text-sm">
+                    {reminders.length} installment{reminders.length === 1 ? "" : "s"} need{reminders.length === 1 ? "s" : ""} attention
+                  </p>
+                  <p className="text-xs text-muted-foreground">Due in the next 3 days or already overdue.</p>
+                </div>
+              </div>
+              <Link href="/installments">
+                <Button size="sm" variant="outline" className="h-8 text-xs gap-1 self-start" data-testid="link-reminders-view-all">
+                  Pay now <ArrowRight className="h-3 w-3" />
+                </Button>
+              </Link>
+            </div>
+            <div className="space-y-2">
+              {reminders.slice(0, 3).map((inst) => {
+                const days = differenceInDays(parseISO(inst.dueDate), todayStart);
+                const remaining = Number(inst.amount) - Number(inst.paidAmount ?? 0);
+                const isOverdue = inst.status === "overdue" || days < 0;
+                return (
+                  <div
+                    key={inst.id}
+                    className="flex items-center justify-between gap-3 p-2.5 rounded-lg bg-white dark:bg-amber-950/30 border border-amber-100 dark:border-amber-900/30"
+                    data-testid={`reminder-installment-${inst.id}`}
+                  >
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">{inst.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {format(parseISO(inst.dueDate), "MMM d")} · ₱{remaining.toFixed(2)} left
+                      </p>
+                    </div>
+                    <Badge
+                      variant="outline"
+                      className={`text-xs shrink-0 ${
+                        isOverdue
+                          ? "border-rose-300 text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/30"
+                          : "border-amber-300 text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40"
+                      }`}
+                    >
+                      {isOverdue ? `Overdue ${Math.abs(days)}d` : days === 0 ? "Due today" : `${days}d left`}
+                    </Badge>
+                  </div>
+                );
+              })}
+              {reminders.length > 3 && (
+                <p className="text-xs text-muted-foreground text-center pt-1">
+                  + {reminders.length - 3} more
+                </p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
