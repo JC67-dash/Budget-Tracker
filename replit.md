@@ -2,22 +2,27 @@
 
 ## Overview
 
-pnpm workspace monorepo. Contains the **Budgetarian** personal finance app — a full-featured finance tracker with expense logging, savings goals, paylater/installment tracking, warranty keeper with receipt uploads, money-saving tips, and a dashboard summary.
+pnpm workspace monorepo using TypeScript. Contains the **Budgetarian** personal finance app — a full-featured finance tracker with expense logging, savings goals, paylater/installment tracking, warranty keeper with receipt uploads, money-saving tips, and a dashboard summary.
 
 ## Stack
 
-- **Monorepo tool**: pnpm workspaces + Node.js 24
+- **Monorepo tool**: pnpm workspaces
+- **Node.js version**: 24
+- **Package manager**: pnpm
+- **TypeScript version**: 5.9
+- **API framework**: Express 5
 - **Frontend**: React + Vite (Tailwind, shadcn/ui, Recharts, Wouter)
-- **Auth**: Clerk (`@clerk/react` frontend, JWT/JWKS verification in Java backend)
-- **Backend**: Java 19 + Spring Boot 3.2 + Spring JDBC (JdbcTemplate)
-- **Database**: PostgreSQL (accessed via `DATABASE_URL` env var)
-- **Object Storage**: Replit Object Storage / GCS (for warranty receipt uploads)
+- **Auth**: Clerk (via `@clerk/react` on frontend, `@clerk/express` on backend)
+- **Database**: PostgreSQL + Drizzle ORM
+- **Validation**: Zod (`zod/v4`), `drizzle-zod`
+- **API codegen**: Orval (from OpenAPI spec)
+- **Object Storage**: Replit Object Storage (for warranty receipt uploads)
+- **Build**: esbuild (CJS bundle)
 
 ## Artifacts
 
 - **`artifacts/budgetarian`** — React+Vite frontend, served at `/`
-- **`artifacts/java-api`** — Spring Boot 3.2 REST API backend (replaces former Node.js api-server)
-- **`artifacts/api-server`** — artifact shell whose workflow now runs the Java server
+- **`artifacts/api-server`** — Express 5 REST API backend, served at `/api`
 
 ## Key Pages (frontend)
 
@@ -30,45 +35,34 @@ pnpm workspace monorepo. Contains the **Budgetarian** personal finance app — a
 - `/warranties` — Warranty keeper with receipt image upload
 - `/tips` — Money-saving tips and income ideas with category tabs
 
-## API Routes (Java backend — context path `/api`)
+## API Routes (backend)
 
-- `GET/POST /api/expenses`, `GET /api/expenses/summary`, `GET|PATCH|DELETE /api/expenses/:id`
-- `GET/POST /api/goals`, `PATCH|DELETE /api/goals/:id`
-- `GET/POST /api/installments`, `GET /api/installments/upcoming`, `PATCH|DELETE /api/installments/:id`
-- `GET/POST /api/warranties`, `GET /api/warranties/expiring-soon`, `PATCH|DELETE /api/warranties/:id`
-- `GET /api/tips` (no auth)
-- `GET /api/dashboard/summary`
-- `POST /api/storage/uploads/request-url`, `GET /api/storage/objects/**`, `GET /api/storage/public-objects/**`
-- `GET /api/healthz`
+- `GET/POST /api/expenses` — list/create expenses
+- `GET /api/expenses/summary` — category breakdown
+- `PATCH/DELETE /api/expenses/:id` — update/delete
+- `GET/POST /api/goals` — list/create goals
+- `PATCH/DELETE /api/goals/:id` — update/delete
+- `GET/POST /api/installments` — list/create installments
+- `GET /api/installments/upcoming` — due within 7 days
+- `PATCH/DELETE /api/installments/:id` — update/delete
+- `GET/POST /api/warranties` — list/create warranties
+- `GET /api/warranties/expiring-soon` — expiring within 30 days
+- `PATCH/DELETE /api/warranties/:id` — update/delete
+- `GET /api/tips` — list tips (seeded)
+- `GET /api/dashboard/summary` — all summary stats combined
+- `POST /api/storage/uploads/request-url` — presigned upload URL
+- `GET /api/storage/*` — serve stored files
 
-## DB Schema
+## DB Schema (lib/db/src/schema/index.ts)
 
-Tables in PostgreSQL: `expenses`, `goals`, `installments`, `warranties`
-Schema source of truth: `lib/db/src/schema/`
+Tables: `expenses`, `goals`, `installments`, `warranties`
 
 ## Key Commands
 
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
-- `mvn -f artifacts/java-api/pom.xml spring-boot:run` — run Java API locally
-- `mvn -f artifacts/java-api/pom.xml compile` — compile Java sources
+- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks from OpenAPI spec
+- `pnpm --filter @workspace/api-server run dev` — run API server locally
 
-## Architecture decisions
-
-- Java backend uses `INSERT ... RETURNING *` with PostgreSQL for all mutations
-- Clerk JWT verification uses JWKS derived from `VITE_CLERK_PUBLISHABLE_KEY` env var (base64-decoded to get domain)
-- Object storage ACL policy stored in GCS object custom metadata under key `custom:aclPolicy`
-- GCS client configured with Replit sidecar external-account credentials (`http://127.0.0.1:1106`)
-- Spring `server.servlet.context-path=/api` so controllers map paths without `/api` prefix
-
-## User preferences
-
-- Backend should be Java (Spring Boot), not Node.js/Express
-
-## Gotchas
-
-- Workflow for api-server runs from `artifacts/api-server/` dir — use absolute path for Maven: `mvn -f /home/runner/workspace/artifacts/java-api/pom.xml ...`
-- Spring Boot interceptor path patterns are relative to context path (omit `/api` prefix)
-- Maven downloads deps on first run — startup takes ~60s initially, then fast from cache
+See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details.

@@ -10,18 +10,23 @@ name = "API Server"
 paths = ["/api"]
 
 [services.development]
-run = "mvn -f /home/runner/workspace/artifacts/java-api/pom.xml spring-boot:run"
+run = "pnpm --filter @workspace/api-server run dev"
 
 [services.production]
 
 [services.production.build]
-args = ["mvn", "-f", "/home/runner/workspace/artifacts/java-api/pom.xml", "package", "-DskipTests"]
+args = ["pnpm", "--filter", "@workspace/api-server", "run", "build"]
+
+[services.production.build.env]
+NODE_ENV = "production"
 
 [services.production.run]
-args = ["java", "-jar", "/home/runner/workspace/artifacts/java-api/target/api-0.0.1-SNAPSHOT.jar"]
+# we don't run through pnpm to make startup faster in production
+args = ["node", "--enable-source-maps", "artifacts/api-server/dist/index.mjs"]
 
 [services.production.run.env]
 PORT = "8080"
+NODE_ENV = "production"
 
 [services.production.health.startup]
 path = "/api/healthz"
