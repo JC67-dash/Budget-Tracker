@@ -282,7 +282,7 @@ export default function Expenses() {
       </div>
 
       <Card className="border-none shadow-sm bg-card overflow-hidden">
-        <div className="p-4 border-b border-border bg-muted/20 flex flex-col sm:flex-row gap-4 items-center">
+        <div className="p-3 sm:p-4 border-b border-border bg-muted/20 flex flex-col sm:flex-row gap-3 sm:gap-4 sm:items-center">
           <div className="relative flex-1 w-full">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input 
@@ -333,52 +333,66 @@ export default function Expenses() {
           ) : (
             <div className="divide-y divide-border">
               {filteredExpenses.map((expense) => (
-                <div key={expense.id} className="p-4 flex items-center justify-between hover:bg-muted/30 transition-colors group" data-testid={`row-expense-${expense.id}`}>
-                  <div className="flex items-center gap-4">
+                <div
+                  key={expense.id}
+                  className="p-4 hover:bg-muted/30 transition-colors group"
+                  data-testid={`row-expense-${expense.id}`}
+                >
+                  <div className="flex items-start gap-3">
                     <div className="h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
                       <Receipt className="h-5 w-5" />
                     </div>
-                    <div>
-                      <p className="font-medium text-foreground">{expense.description}</p>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-xs text-muted-foreground">{format(new Date(expense.date), "MMM d, yyyy")}</span>
-                        <span className="text-xs bg-secondary text-secondary-foreground px-2 py-0.5 rounded-full">{expense.category}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-3">
+                        <p className="font-medium text-foreground break-words min-w-0 flex-1">
+                          {expense.description}
+                        </p>
+                        <span className="font-semibold text-foreground whitespace-nowrap shrink-0">
+                          ₱{expense.amount.toFixed(2)}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between gap-2 mt-1.5">
+                        <div className="flex items-center gap-2 flex-wrap min-w-0">
+                          <span className="text-xs text-muted-foreground whitespace-nowrap">
+                            {format(new Date(expense.date), "MMM d, yyyy")}
+                          </span>
+                          <span className="text-xs bg-secondary text-secondary-foreground px-2 py-0.5 rounded-full truncate max-w-[160px]">
+                            {expense.category}
+                          </span>
+                        </div>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 -my-1 text-muted-foreground hover:text-destructive shrink-0 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
+                              disabled={deleteExpense.isPending}
+                              data-testid={`button-delete-expense-${expense.id}`}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete this expense?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                "{expense.description}" (₱{expense.amount.toFixed(2)}) will be permanently removed. This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel data-testid={`button-cancel-delete-expense-${expense.id}`}>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => deleteExpense.mutate({ id: expense.id })}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                data-testid={`button-confirm-delete-expense-${expense.id}`}
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <span className="font-semibold text-foreground">₱{expense.amount.toFixed(2)}</span>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
-                          disabled={deleteExpense.isPending}
-                          data-testid={`button-delete-expense-${expense.id}`}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete this expense?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            "{expense.description}" (₱{expense.amount.toFixed(2)}) will be permanently removed. This action cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel data-testid={`button-cancel-delete-expense-${expense.id}`}>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => deleteExpense.mutate({ id: expense.id })}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            data-testid={`button-confirm-delete-expense-${expense.id}`}
-                          >
-                            Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
                   </div>
                 </div>
               ))}
