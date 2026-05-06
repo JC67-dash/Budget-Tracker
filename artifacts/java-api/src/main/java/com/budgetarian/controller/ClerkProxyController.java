@@ -33,8 +33,18 @@ public class ClerkProxyController {
         String targetUrl = CLERK_FAPI + (targetPath.isEmpty() ? "/" : targetPath)
                 + (queryString != null ? "?" + queryString : "");
 
-        String protocol = Optional.ofNullable(request.getHeader("x-forwarded-proto")).orElse("https");
-        String host = Optional.ofNullable(request.getHeader("host")).orElse(request.getServerName());
+        String xfProto = request.getHeader("x-forwarded-proto");
+        String protocol = (xfProto != null && !xfProto.isBlank())
+                ? xfProto.split(",")[0].trim()
+                : request.getScheme();
+
+        String xfHost = request.getHeader("x-forwarded-host");
+        String host;
+        if (xfHost != null && !xfHost.isBlank()) {
+            host = xfHost.split(",")[0].trim();
+        } else {
+            host = Optional.ofNullable(request.getHeader("host")).orElse(request.getServerName());
+        }
         String proxyUrl = protocol + "://" + host + "/api/__clerk";
 
         byte[] bodyBytes = request.getInputStream().readAllBytes();
