@@ -10,7 +10,7 @@ import {
   getGetDashboardSummaryQueryKey,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2, CalendarClock, CheckCircle2, AlertTriangle, Clock, Wallet } from "lucide-react";
+import { Plus, Trash2, CalendarClock, CheckCircle2, AlertTriangle, Clock, Wallet, Pencil } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -56,6 +56,7 @@ const statusConfig = {
 
 export default function Installments() {
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [payingId, setPayingId] = useState<number | null>(null);
   const [payAmount, setPayAmount] = useState<string>("");
   const { toast } = useToast();
@@ -87,7 +88,15 @@ export default function Installments() {
         queryClient.invalidateQueries({ queryKey: getListInstallmentsQueryKey() });
         queryClient.invalidateQueries({ queryKey: getGetUpcomingInstallmentsQueryKey() });
         queryClient.invalidateQueries({ queryKey: getGetDashboardSummaryQueryKey() });
+        if (editingId !== null) {
+          setIsAddOpen(false);
+          setEditingId(null);
+          form.reset();
+        }
         toast({ title: "Installment updated" });
+      },
+      onError: (err: Error) => {
+        toast({ title: "Failed to update installment", description: err.message, variant: "destructive" });
       },
     },
   });
@@ -140,13 +149,44 @@ export default function Installments() {
         : termMonths && termMonths > 0
           ? Number((amount / termMonths).toFixed(2))
           : undefined;
-    createInstallment.mutate({
-      data: {
-        ...rest,
-        amount,
-        ...(monthlyAmount ? { monthlyAmount } : {}),
-      },
+    const payload = {
+      ...rest,
+      amount,
+      ...(monthlyAmount ? { monthlyAmount } : {}),
+    };
+    if (editingId !== null) {
+      updateInstallment.mutate({ id: editingId, data: payload });
+    } else {
+      createInstallment.mutate({ data: payload });
+    }
+  };
+
+  const openAdd = () => {
+    setEditingId(null);
+    form.reset({
+      name: "",
+      amount: 0,
+      termMonths: undefined,
+      monthlyAmount: undefined,
+      dueDate: format(new Date(), "yyyy-MM-dd"),
+      status: "pending",
+      notes: "",
     });
+    setIsAddOpen(true);
+  };
+
+  const openEdit = (inst: typeof installments[number]) => {
+    setEditingId(inst.id);
+    form.reset({
+      name: inst.name,
+      amount: Number(inst.amount),
+      termMonths: undefined,
+      monthlyAmount: inst.monthlyAmount != null ? Number(inst.monthlyAmount) : undefined,
+      dueDate: inst.dueDate,
+      status: inst.status as "pending" | "paid" | "overdue",
+      notes: inst.notes ?? "",
+    });
+    setIsAddOpen(true);
   };
 
   const watchedAmount = form.watch("amount");
@@ -184,15 +224,28 @@ export default function Installments() {
           <p className="text-muted-foreground mt-1">Track upcoming payment due dates.</p>
         </div>
 
-        <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
+        <Dialog
+          open={isAddOpen}
+          onOpenChange={(open) => {
+            setIsAddOpen(open);
+            if (!open) {
+              setEditingId(null);
+              form.reset();
+            }
+          }}
+        >
           <DialogTrigger asChild>
-            <Button className="rounded-full shadow-sm hover-elevate" data-testid="button-add-installment">
+            <Button
+              onClick={openAdd}
+              className="rounded-full shadow-sm hover-elevate"
+              data-testid="button-add-installment"
+            >
               <Plus className="h-4 w-4 mr-2" /> Add Payment
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Add Installment / Payment</DialogTitle>
+              <DialogTitle>{editingId !== null ? "Edit Installment" : "Add Installment / Payment"}</DialogTitle>
             </DialogHeader>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -324,8 +377,12 @@ export default function Installments() {
                   )}
                 />
                 <DialogFooter>
-                  <Button type="submit" disabled={createInstallment.isPending} data-testid="button-submit-installment">
-                    Add Payment
+                  <Button
+                    type="submit"
+                    disabled={createInstallment.isPending || updateInstallment.isPending}
+                    data-testid="button-submit-installment"
+                  >
+                    {editingId !== null ? "Save changes" : "Add Payment"}
                   </Button>
                 </DialogFooter>
               </form>
@@ -427,6 +484,15 @@ export default function Installments() {
                         <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Mark Paid
                       </Button>
                     )}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-muted-foreground hover:text-primary"
+                      onClick={() => openEdit(inst)}
+                      data-testid={`button-edit-installment-${inst.id}`}
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button
